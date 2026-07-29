@@ -85,6 +85,21 @@
           <span class="module-name">Aile Güvenliği</span>
           <span class="module-desc">Çocuklar için rehber</span>
         </button>
+        <button class="module-card" data-goto="qr">
+          <span class="module-icon">🔳</span>
+          <span class="module-name">Karekod Tarama</span>
+          <span class="module-desc">Karşına çıkan her karekodu kamerayla test et</span>
+        </button>
+        <button class="module-card" data-goto="scan">
+          <span class="module-icon">🔍</span>
+          <span class="module-name">Tarama</span>
+          <span class="module-desc">Bağlantı veya SMS'i yapıştır, güvenli mi öğren</span>
+        </button>
+        <button class="module-card" data-goto="threats">
+          <span class="module-icon">🦠</span>
+          <span class="module-name">Virüs Türleri</span>
+          <span class="module-desc">Trojan, casus yazılım ve diğer tehditler</span>
+        </button>
       </div>
     </section>
 
@@ -149,7 +164,187 @@
       <div class="family-accordion" id="familyAccordion"></div>
     </section>
 
+    <!-- ---------- KAREKOD GÜVENLİK TARAMASI ---------- -->
+    <section class="view" id="view-qr" data-view hidden>
+      <h1 class="view-title">Karekod Güvenlik Taraması</h1>
+      <p class="view-sub">Ürün ambalajı, afiş, ödeme noktası, Wi-Fi paylaşımı, kartvizit — kameranla okuduğun HER karekod türü için gerçek hedefi görmeden önce risk seviyesini analiz eder.</p>
+
+      <div class="trust-banner">
+        <span class="trust-icon">🔒</span>
+        <span>Tarama tamamen bu cihazda yapılır, hiçbir görüntü veya bağlantı sunucuya gönderilmez.</span>
+      </div>
+
+      <button class="qr-open-btn" id="qrOpenBtn" type="button">
+        <span class="qr-open-icon" aria-hidden="true">📷</span> KAMERAYI AÇ VE KAREKOD OKU
+      </button>
+
+      <div class="qr-manual">
+        <label class="field-label" for="qrManualInput">veya karekoddaki bağlantıyı/metni elle yapıştır</label>
+        <div class="qr-manual-row">
+          <input type="text" id="qrManualInput" class="pw-input" placeholder="https:// … ya da ödeme/ürün metni" autocomplete="off" autocapitalize="off" spellcheck="false">
+          <button class="qr-manual-btn" id="qrManualBtn" type="button">Test Et</button>
+        </div>
+      </div>
+
+      <div class="qr-result hidden" id="qrResult">
+        <div class="qr-result-head">
+          <span class="qr-badge" id="qrBadge">GÜVENLİ</span>
+          <span class="qr-score" id="qrScore">Risk: 0/100</span>
+        </div>
+        <div class="qr-raw" id="qrRaw"></div>
+        <div class="qr-findings" id="qrFindings"></div>
+        <p class="qr-note">Bu, kural tabanlı bir sezgisel (heuristic) kontrolüdür; kesin bir tehdit veritabanı garantisi değildir. Şüphedeysen ödemeyi/işlemi yapmadan önce ürünü/işletmeyi resmi kanaldan doğrula.</p>
+      </div>
+
+      <div class="section-label">Karekod Dolandırıcılığına Karşı</div>
+      <ul class="tip-list">
+        <li>Ürün ambalajındaki karekod, kutunun üzerine sonradan yapıştırılmış bir etiket gibi duruyorsa dikkatli ol.</li>
+        <li>Otopark/restoran ödeme karekodlarında adres çubuğunu ödeme öncesi mutlaka kontrol et.</li>
+        <li>Karekod seni bir uygulama indirmeye (.apk) yönlendiriyorsa asla kurma.</li>
+        <li>Tanımadığın bir Wi-Fi karekoduna bağlanmadan önce ağın gerçekten o işletmeye ait olduğunu sor.</li>
+        <li>Kripto para adresine yönlendiren karekodlarla yapılan ödemeler geri alınamaz — göndermeden önce doğrula.</li>
+        <li>"İndirim kazandınız" gibi vaatlerle gelen karekodlara karşı temkinli ol.</li>
+      </ul>
+    </section>
+
+    <!-- ---------- TARAMA (BAĞLANTI / SMS) ---------- -->
+    <section class="view" id="view-scan" data-view hidden>
+      <h1 class="view-title">Tarama</h1>
+      <p class="view-sub">Şüpheli bir bağlantı mı geldi, yoksa "hesabınız donduruldu" diyen bir SMS mi? Yapıştır, saniyeler içinde güvenli olup olmadığını gör.</p>
+
+      <div class="trust-banner">
+        <span class="trust-icon">🔒</span>
+        <span>Tarama tamamen bu cihazda yapılır, hiçbir metin sunucuya gönderilmez.</span>
+      </div>
+
+      <div class="scan-tabs" id="scanTabs">
+        <button class="chip active" data-scanmode="link" type="button">Bağlantı</button>
+        <button class="chip" data-scanmode="message" type="button">Mesaj / SMS</button>
+      </div>
+
+      <textarea id="scanInput" class="scan-textarea" rows="4" placeholder="https:// ile başlayan bağlantıyı buraya yapıştır…"></textarea>
+      <button class="qr-open-btn" id="scanBtn" type="button">TARA</button>
+
+      <div class="qr-result hidden" id="scanResult">
+        <div class="qr-result-head">
+          <span class="qr-badge" id="scanBadge">GÜVENLİ</span>
+          <span class="qr-score" id="scanScore">Risk: 0/100</span>
+        </div>
+        <div class="qr-findings" id="scanFindings"></div>
+        <p class="qr-note">Bu, kural tabanlı bir sezgisel (heuristic) kontrolüdür; kesin bir tehdit veritabanı garantisi değildir. Şüphedeysen bağlantıyı açma, kurumu resmi numarasından ara.</p>
+      </div>
+
+      <div class="history-head">
+        <div class="section-label" style="margin:28px 0 0;">Son Taramalar Geçmişi</div>
+        <button class="ghost-btn" id="clearHistoryBtn" type="button">Temizle</button>
+      </div>
+      <div class="history-list" id="scanHistoryList"></div>
+    </section>
+
+    <!-- ---------- VİRÜS TÜRLERİ ---------- -->
+    <section class="view" id="view-threats" data-view hidden>
+      <h1 class="view-title">Kızılkaya'nın Bildiği Virüs Türleri</h1>
+      <p class="view-sub">Karşına çıkabilecek başlıca kötü amaçlı yazılım türlerini tanı — ne yaptıklarını bilmek, onlardan korunmanın ilk adımıdır.</p>
+
+      <div class="threat-grid">
+
+        <article class="threat-card">
+          <svg class="threat-icon" viewBox="0 0 64 64" aria-hidden="true">
+            <circle cx="32" cy="32" r="14" fill="var(--surface-2)" stroke="var(--red-soft)" stroke-width="2.4"/>
+            <circle cx="32" cy="32" r="5.5" fill="var(--red-soft)"/>
+            <g stroke="var(--red-soft)" stroke-width="2.4" stroke-linecap="round">
+              <line x1="32" y1="6" x2="32" y2="14"/>
+              <line x1="32" y1="50" x2="32" y2="58"/>
+              <line x1="6" y1="32" x2="14" y2="32"/>
+              <line x1="50" y1="32" x2="58" y2="32"/>
+              <line x1="13.5" y1="13.5" x2="19" y2="19"/>
+              <line x1="45" y1="45" x2="50.5" y2="50.5"/>
+              <line x1="50.5" y1="13.5" x2="45" y2="19"/>
+              <line x1="19" y1="45" x2="13.5" y2="50.5"/>
+            </g>
+            <circle cx="13.5" cy="13.5" r="3" fill="var(--red-soft)"/>
+            <circle cx="50.5" cy="13.5" r="3" fill="var(--red-soft)"/>
+            <circle cx="13.5" cy="50.5" r="3" fill="var(--red-soft)"/>
+            <circle cx="50.5" cy="50.5" r="3" fill="var(--red-soft)"/>
+          </svg>
+          <h3>Virüs</h3>
+          <p>Sağlıklı bir dosyaya kendini ekleyerek yayılan, çalıştırıldığında sistemi bozan veya veri silen klasik kötü amaçlı yazılım türü. Genelde korsan yazılım veya bilinmeyen kaynaklardan indirilen dosyalarla bulaşır.</p>
+        </article>
+
+        <article class="threat-card">
+          <svg class="threat-icon" viewBox="0 0 64 64" aria-hidden="true">
+            <ellipse cx="32" cy="46" rx="20" ry="8" fill="var(--surface-2)" stroke="var(--red-soft)" stroke-width="2.2"/>
+            <path d="M14 40 L20 18 Q24 10 32 10 Q40 10 44 18 L50 40" fill="var(--surface-2)" stroke="var(--red-soft)" stroke-width="2.2" stroke-linejoin="round"/>
+            <path d="M20 18 L12 22 M44 18 L52 22" stroke="var(--red-soft)" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+            <circle cx="26" cy="26" r="2.6" fill="var(--red-soft)"/>
+            <circle cx="38" cy="26" r="2.6" fill="var(--red-soft)"/>
+            <path d="M25 46 L25 54 M32 46 L32 56 M39 46 L39 54" stroke="var(--red-soft)" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M46 14 L54 8 M50 18 L58 16" stroke="var(--amber)" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <h3>Trojan (Truva Atı)</h3>
+          <p>Zararsız, hatta faydalı bir uygulama gibi görünüp kurulduktan sonra arka planda cihazına sızan yazılım türü. Adını, içine gizlice asker saklanan efsanevi Truva Atı'ndan alır — göründüğü gibi değildir.</p>
+        </article>
+
+        <article class="threat-card">
+          <svg class="threat-icon" viewBox="0 0 64 64" aria-hidden="true">
+            <path d="M6 32 Q32 12 58 32 Q32 52 6 32 Z" fill="var(--surface-2)" stroke="var(--red-soft)" stroke-width="2.2" stroke-linejoin="round"/>
+            <circle cx="32" cy="32" r="10" fill="var(--surface)" stroke="var(--red-soft)" stroke-width="2.2"/>
+            <circle cx="32" cy="32" r="4" fill="var(--red-soft)"/>
+            <g stroke="var(--amber)" stroke-width="2" stroke-linecap="round">
+              <line x1="46" y1="18" x2="52" y2="12"/>
+              <line x1="52" y1="12" x2="58" y2="14"/>
+              <line x1="52" y1="12" x2="50" y2="18"/>
+            </g>
+          </svg>
+          <h3>Casus Yazılım (Spyware)</h3>
+          <p>Fark ettirmeden ekranını, tuş vuruşlarını, konumunu ya da mesajlarını izleyip başka bir yere ileten sessiz tehdit. Genelde şifreler ve banka bilgileri gibi hassas verileri çalmak için kullanılır.</p>
+        </article>
+
+        <article class="threat-card">
+          <svg class="threat-icon" viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="16" y="28" width="32" height="24" rx="4" fill="var(--surface-2)" stroke="var(--red-soft)" stroke-width="2.2"/>
+            <path d="M22 28 V20 a10 10 0 0 1 20 0 v8" fill="none" stroke="var(--red-soft)" stroke-width="2.2"/>
+            <circle cx="32" cy="38" r="4" fill="var(--red-soft)"/>
+            <line x1="32" y1="41" x2="32" y2="46" stroke="var(--red-soft)" stroke-width="2.2" stroke-linecap="round"/>
+            <text x="32" y="24" text-anchor="middle" font-size="9" font-weight="700" fill="var(--amber)">₺</text>
+          </svg>
+          <h3>Fidye Yazılımı (Ransomware)</h3>
+          <p>Cihazındaki dosyaları şifreleyip erişimini kilitler, açmak için para (genelde kripto para) talep eder. Ödeme yapılsa bile dosyaların geri gelmesi garanti değildir — en iyi korunma düzenli yedeklemedir.</p>
+        </article>
+
+        <article class="threat-card">
+          <svg class="threat-icon" viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="8" y="18" width="34" height="24" rx="3" fill="var(--surface-2)" stroke="var(--red-soft)" stroke-width="2.2"/>
+            <path d="M8 20 L25 34 L42 20" fill="none" stroke="var(--red-soft)" stroke-width="2.2" stroke-linejoin="round"/>
+            <path d="M44 26 Q54 26 54 36 Q54 44 47 46 L49 52 L42 47" fill="none" stroke="var(--amber)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <h3>Oltalama (Phishing)</h3>
+          <p>Banka, kargo veya e-Devlet gibi güvenilir bir kurumu taklit eden sahte e-posta, SMS veya web sitesiyle şifre/kart bilgisi çalmayı hedefler. "Tarama" modülüyle şüphelendiğin linkleri buradan test edebilirsin.</p>
+        </article>
+
+      </div>
+    </section>
+
   </main>
+
+  <!-- KAREKOD KAMERA MODALI -->
+  <div id="qrModal" class="qr-modal hidden" role="dialog" aria-modal="true" aria-label="Karekod Tarayıcı">
+    <div class="qr-modal-inner">
+      <div class="qr-modal-head">
+        <span>KAREKOD TARAYICI</span>
+        <button id="qrCloseBtn" class="qr-close" type="button" aria-label="Kapat">✕</button>
+      </div>
+      <div class="qr-video-wrap">
+        <video id="qrVideo" playsinline autoplay muted></video>
+        <div class="qr-target-frame" aria-hidden="true">
+          <span class="qr-corner tl"></span><span class="qr-corner tr"></span>
+          <span class="qr-corner bl"></span><span class="qr-corner br"></span>
+        </div>
+      </div>
+      <p id="qrStatus" class="qr-status">Kamera başlatılıyor…</p>
+      <p class="qr-hint">Karekodu çerçeve içine hizala. Kod okunduğunda otomatik olarak analiz edilecek.</p>
+    </div>
+  </div>
 
   <!-- ===== BOTTOM NAV ===== -->
   <nav class="bottom-nav" id="bottomNav">
@@ -168,10 +363,20 @@
     <button class="nav-btn" data-goto="family">
       <span class="nav-icon">🛡️</span><span class="nav-label">Aile</span>
     </button>
+    <button class="nav-btn" data-goto="qr">
+      <span class="nav-icon">🔳</span><span class="nav-label">Karekod</span>
+    </button>
+    <button class="nav-btn" data-goto="scan">
+      <span class="nav-icon">🔍</span><span class="nav-label">Tarama</span>
+    </button>
+    <button class="nav-btn" data-goto="threats">
+      <span class="nav-icon">🦠</span><span class="nav-label">Virüsler</span>
+    </button>
   </nav>
 
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js" defer></script>
 <script src="app.js"></script>
 </body>
 </html>
