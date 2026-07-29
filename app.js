@@ -1,6 +1,13 @@
 (() => {
   "use strict";
 
+  /* ======================= SPLASH INTRO ======================= */
+  const splash = document.getElementById("splash");
+  if(splash){
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setTimeout(() => splash.remove(), reduceMotion ? 50 : 1900);
+  }
+
   /* ======================= NAVIGATION ======================= */
   const views = document.querySelectorAll("[data-view]");
   const navButtons = document.querySelectorAll("[data-goto]");
@@ -312,4 +319,3 @@
   }
 
 })();
-
