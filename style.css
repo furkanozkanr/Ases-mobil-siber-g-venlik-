@@ -213,8 +213,12 @@ button{ font-family: inherit; }
 .pw-input:focus{ outline:2px solid var(--red); outline-offset:1px; border-color: var(--red); }
 .pw-toggle{
   position:absolute; right:8px; top:50%; transform:translateY(-50%);
-  background:none; border:none; color: var(--gray); font-size:1.1rem; cursor:pointer; padding:6px;
+  background:none; border:none; color: var(--gray); cursor:pointer; padding:6px;
+  display:flex; align-items:center; justify-content:center;
 }
+.pw-eye-icon{ display:flex; width:20px; height:20px; }
+.pw-eye-icon svg{ width:100%; height:100%; }
+.pw-eye-icon.hidden{ display:none; }
 .meter-track{ height:8px; border-radius:4px; background: var(--surface-2); overflow:hidden; margin-bottom:8px; }
 .meter-fill{ height:100%; width:0%; background: var(--danger); transition: width 0.3s, background 0.3s; }
 .meter-label{ font-size:0.82rem; color: var(--gray); margin-bottom:18px; min-height:1.2em; }
