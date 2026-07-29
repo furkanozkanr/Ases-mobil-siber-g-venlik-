@@ -193,6 +193,35 @@ button{ font-family: inherit; }
 .module-name{ font-family:'Oswald',sans-serif; font-weight:600; font-size:0.92rem; margin-top:4px; }
 .module-desc{ font-size:0.74rem; color: var(--gray); }
 
+/* ===== TARİHÇE (STORY) ===== */
+.story-card{
+  background: linear-gradient(165deg, var(--surface-3), var(--surface) 60%);
+  border:1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 26px 20px 22px;
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+  position:relative; overflow:hidden;
+}
+.story-card::before{
+  content:""; position:absolute; inset:0;
+  background: radial-gradient(60% 50% at 50% 0%, rgba(230,50,50,0.14), transparent 70%);
+  pointer-events:none;
+}
+.story-logo{
+  width:64px; height:64px; border-radius:16px; margin-bottom:12px;
+  box-shadow: 0 0 0 1px rgba(230,50,50,0.35), 0 0 26px rgba(230,50,50,0.35);
+  position:relative; z-index:1;
+}
+.story-title{
+  font-family:'Oswald', sans-serif; font-weight:700; font-size:1.3rem; letter-spacing:0.08em;
+  margin:0; position:relative; z-index:1;
+}
+.story-rule{ width:52px; height:2px; background: var(--red); margin:12px 0 14px; border-radius:2px; position:relative; z-index:1; }
+.story-text{
+  font-size:0.86rem; line-height:1.7; color: var(--gray); margin:0; text-align:left;
+  font-style:italic; position:relative; z-index:1;
+}
+
 /* ===== TRUST BANNER ===== */
 .trust-banner{
   display:flex; align-items:flex-start; gap:10px;
