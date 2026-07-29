@@ -311,6 +311,459 @@
   const familyAccordionEl = document.getElementById("familyAccordion");
   familyItems.forEach(f => familyAccordionEl.appendChild(makeAccordionItem({ title:f.title, bodyHtml:f.body })));
 
+  /* ======================= KAREKOD (QR) GÜVENLİK ANALİZ MOTORU =======================
+     Yalnızca ürün karekodları değil, kamerayla okunan HER TÜR karekod içeriği için
+     (bağlantı, Wi-Fi, telefon, SMS, e-posta, kripto adresi, kartvizit, düz metin)
+     kural tabanlı bir sezgisel tehdit taraması yapar. Gerçek bir tehdit veritabanı
+     DEĞİLDİR — bilinen dolandırıcılık/kandırmaca kalıplarını puanlayan bir ön uyarı katmanıdır. */
+
+  const SUSPICIOUS_TLDS = [
+    "zip","mov","xyz","tk","top","gq","ml","cf","click","fit","loan","work",
+    "support","link","biz","cc","site","online","info","club","live","icu",
+    "pw","rest","cfd","sbs","cyou","buzz","monster","quest","bond"
+  ];
+  const SHORTENERS = [
+    "bit.ly","tinyurl.com","t.co","is.gd","cutt.ly","shorte.st","ow.ly","buff.ly",
+    "goo.gl","rebrand.ly","tiny.cc","shorturl.at","rb.gy","t.ly","v.gd","clck.ru",
+    "s.id","b.link","lnkd.in","amzn.to"
+  ];
+  const BRANDS = {
+    "garanti":["garanti.com.tr","garantibbva.com.tr"], "isbank":["isbank.com.tr"],
+    "ziraat":["ziraatbank.com.tr","ziraat.com.tr"], "akbank":["akbank.com","akbank.com.tr"],
+    "yapikredi":["yapikredi.com.tr","ykb.com"], "halkbank":["halkbank.com.tr"],
+    "vakifbank":["vakifbank.com.tr"], "denizbank":["denizbank.com"],
+    "qnb":["qnb.com.tr","qnbfinansbank.com"], "ptt":["ptt.gov.tr","pttavm.com"],
+    "turkcell":["turkcell.com.tr"], "vodafone":["vodafone.com.tr"],
+    "turktelekom":["turktelekom.com.tr","tt.com.tr"], "trendyol":["trendyol.com"],
+    "hepsiburada":["hepsiburada.com"], "amazon":["amazon.com.tr","amazon.com"],
+    "araskargo":["araskargo.com.tr"], "yurtici":["yurticikargo.com"],
+    "mng":["mngkargo.com.tr"], "ups":["ups.com","ups.com.tr"], "dhl":["dhl.com","dhl.com.tr"],
+    "paypal":["paypal.com"], "apple":["apple.com","icloud.com"],
+    "google":["google.com","google.com.tr"], "microsoft":["microsoft.com","live.com","office.com"],
+    "instagram":["instagram.com"], "facebook":["facebook.com","fb.com","meta.com"],
+    "whatsapp":["whatsapp.com","wa.me"], "telegram":["telegram.org","t.me"],
+    "edevlet":["turkiye.gov.tr","edevlet.gov.tr"], "sgk":["sgk.gov.tr"], "gib":["gib.gov.tr"]
+  };
+  const SCAM_PHRASES = [
+    "hesabınız donduruldu","hesabınız kilitlendi","kartınız bloke","kazandınız",
+    "tebrikler kazandınız","ödül kazandınız","kargonuz elimizde","kargo teslim edilemedi",
+    "gümrük ücreti","otp kodunu paylaş","doğrulama kodunu gönder","şifrenizi girin",
+    "sms kodunu gönder","hemen tıklayın","acil işlem","son gün","yasal takip","icra",
+    "sınırlı süre","24 saat içinde","bilgilerinizi güncelleyin","hesabınızı doğrulayın",
+    "iban bilgisi gönderin","kredi kartı bilgisi","cvv","para transferi","havale yapın"
+  ];
+  const SUSPICIOUS_PATHS = [
+    "login","signin","verify","verification","update","secure","security","account",
+    "confirm","confirmation","validate","authenticate","password","reset","recover",
+    "unlock","activate","billing","payment","wallet","webscr","wp-login","admin"
+  ];
+  const MALICIOUS_EXTENSIONS = ["apk","exe","scr","bat","cmd","msi","jar","vbs","ps1"];
+
+  function levenshtein(a, b){
+    a = a.toLowerCase(); b = b.toLowerCase();
+    const m = a.length, n = b.length;
+    if(Math.abs(m - n) > 3) return 99;
+    const dp = Array.from({length:m+1}, () => new Array(n+1).fill(0));
+    for(let i=0;i<=m;i++) dp[i][0]=i;
+    for(let j=0;j<=n;j++) dp[0][j]=j;
+    for(let i=1;i<=m;i++) for(let j=1;j<=n;j++)
+      dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1] : 1+Math.min(dp[i-1][j-1],dp[i-1][j],dp[i][j-1]);
+    return dp[m][n];
+  }
+  function normalizeHost(host){ return host.replace(/^www\./,"").toLowerCase(); }
+  function isOfficialDomain(host, list){ const h=normalizeHost(host); return list.some(o => h===o || h.endsWith("."+o)); }
+  function getMainLabel(host){
+    const labels = normalizeHost(host).split(".");
+    return labels.length >= 2 ? labels[labels.length-2] : (labels[0]||"");
+  }
+  const CONFUSABLE = /[\u0400-\u04FF\u0370-\u03FF]/;
+  function hasMixedScript(text){ return /[a-z]/i.test(text) && CONFUSABLE.test(text); }
+  function detectHiddenChars(raw){ return /[\u200B-\u200F\u2060\uFEFF\u202A-\u202E\u2066-\u2069]/.test(raw); }
+  function isObfuscatedIp(host){
+    if(/^\d{6,10}$/.test(host)) return true;
+    if(/^0x[0-9a-f]+(\.0x[0-9a-f]+){0,3}$/i.test(host)) return true;
+    return false;
+  }
+
+  function analyzeUrlContent(raw){
+    let score = 0, reasons = [];
+    const text = raw.trim();
+    if(/^(javascript|data|vbscript):/i.test(text)){
+      return { score:95, reasons:["Tehlikeli bir betik protokolü (javascript:/data:) tespit edildi — bu kod doğrudan çalıştırılabilir."] };
+    }
+    const hasScheme = /^https?:\/\//i.test(text);
+    let url;
+    try{ url = new URL(hasScheme ? text : "http://"+text); }
+    catch(e){ return { score:35, reasons:["Bu içerik geçerli bir bağlantı biçiminde değil, dikkatli olun."] }; }
+
+    const host = url.hostname.toLowerCase();
+    const path = (url.pathname||"").toLowerCase();
+
+    if(detectHiddenChars(raw)){ score+=40; reasons.push("Görünmez/gizli karakterler tespit edildi — gerçek hedef gizleniyor olabilir."); }
+    if(!hasScheme){ score+=15; reasons.push("Güvenli protokol (https://) belirtilmemiş."); }
+    else if(url.protocol !== "https:"){ score+=32; reasons.push("Güvensiz (HTTP) protokol kullanılıyor — veriler şifrelenmeden gidebilir."); }
+
+    if(/^(\d{1,3}\.){3}\d{1,3}$/.test(host)){ score+=38; reasons.push("Alan adı yerine doğrudan IP adresi kullanılıyor."); }
+    else if(isObfuscatedIp(host)){ score+=38; reasons.push("Gizlenmiş (ondalık/onaltılık) bir IP adresi biçimi tespit edildi."); }
+
+    if(hasMixedScript(text)){ score+=45; reasons.push("Latin harfleriyle karışık Kiril/Yunan karakterleri var — görsel taklit (homoglyph) riski."); }
+    if(text.includes("@") && !host.includes("@")){ score+=25; reasons.push("Bağlantıda '@' işareti var — gerçek adresi gizlemek için kullanılmış olabilir."); }
+    if(host.startsWith("xn--") || host.includes(".xn--")){ score+=30; reasons.push("Punycode (uluslararası karakter) alan adı — marka taklidi riski yüksek."); }
+
+    const subCount = host.split(".").length - 2;
+    if(subCount >= 4){ score+=25; reasons.push("Aşırı sayıda alt alan adı (subdomain) içeriyor."); }
+
+    const dashCount = (host.match(/-/g)||[]).length;
+    if(dashCount >= 4){ score+=16; reasons.push("Alan adında çok sayıda tire (-) var."); }
+
+    const tld = host.split(".").pop();
+    if(SUSPICIOUS_TLDS.includes(tld)){ score+=24; reasons.push("'."+tld+"' uzantısı dolandırıcılar tarafından sık tercih edilen ucuz bir uzantı."); }
+
+    const isShortener = SHORTENERS.some(s => host===s || host.endsWith("."+s));
+    if(isShortener){ score+=22; reasons.push("Kısaltılmış bağlantı — sizi gerçekte hangi siteye götüreceği gizlenmiş."); }
+
+    const knownOfficial = Object.values(BRANDS).some(list => isOfficialDomain(host, list));
+    for(const [brand, official] of Object.entries(BRANDS)){
+      if(host.includes(brand)){
+        if(!isOfficialDomain(host, official) && !isShortener){
+          score += 40; reasons.push(`Güvenilir kurum adı ("${brand}") resmi olmayan bir adreste geçiyor — sahte site riski yüksek.`);
+        }
+      } else if(!knownOfficial){
+        const main = getMainLabel(host);
+        if(main.length>=4 && brand.length>=4){
+          const dist = levenshtein(main, brand);
+          if(dist>0 && dist<=(brand.length<=5?1:2)){
+            score += 34; reasons.push(`Alan adı "${main}", bilinen marka "${brand}" ile çok benziyor (typosquatting).`);
+          }
+        }
+      }
+    }
+
+    for(const part of path.split("/").filter(Boolean)){
+      if(SUSPICIOUS_PATHS.some(sp => part===sp || part.startsWith(sp+"-"))){
+        score += 15; reasons.push(`Bağlantı yolunda şüpheli kelime var: "/${part}"`); break;
+      }
+    }
+    const extMatch = path.match(/\.([a-z0-9]{2,5})(?:$|[?#])/i);
+    if(extMatch && MALICIOUS_EXTENSIONS.includes(extMatch[1].toLowerCase())){
+      score += 40; reasons.push(`Bağlantı doğrudan bir ".${extMatch[1]}" kurulum/çalıştırma dosyası indiriyor.`);
+    }
+    if(text.length > 120){ score+=8; reasons.push("Bağlantı alışılmadık derecede uzun."); }
+
+    score = Math.min(score, 100);
+    return { score, reasons: [...new Set(reasons)] };
+  }
+
+  function analyzeTextContent(raw){
+    let score = 0, reasons = [];
+    const clean = raw.replace(/[\u200B-\u200F\u2060\uFEFF\u202A-\u202E\u2066-\u2069]/g, "");
+    const lower = clean.toLowerCase();
+    let hits = 0;
+    SCAM_PHRASES.forEach(p => {
+      if(lower.includes(p)){ hits++; score += hits===1?22:hits===2?16:10; reasons.push(`Dolandırıcılık kalıbı: "${p}"`); }
+    });
+    const urlMatch = clean.match(/https?:\/\/[^\s<>"']+/i) || clean.match(/[a-z0-9.-]+\.(com|net|org|tr|xyz|online|site|click|tk|top)\b/i);
+    if(urlMatch){
+      const inner = analyzeUrlContent(urlMatch[0]);
+      score += Math.round(inner.score * 0.5);
+      inner.reasons.slice(0,2).forEach(r => reasons.push("(Bağlantı) " + r));
+    }
+    if(/(şifre|parola|otp|doğrulama kodu|cvv|cvc|kart no|iban|tc kimlik)/i.test(clean)){
+      score += 18; reasons.push("Mesaj doğrudan şifre, OTP, kart veya kimlik bilgisi talep ediyor gibi görünüyor.");
+    }
+    score = Math.min(score, 100);
+    return { score, reasons: [...new Set(reasons)] };
+  }
+
+  // Karekod içeriğinin türünü tanır (yalnızca link değil — Wi-Fi, telefon, SMS,
+  // e-posta, kripto adresi, kartvizit ve düz metin dahil HER TÜR kamera taraması).
+  function analyzeQrPayload(raw){
+    const text = String(raw).trim();
+
+    if(/^WIFI:/i.test(text)){
+      const ssid = (text.match(/S:([^;]*)/i)||[])[1] || "(bilinmiyor)";
+      const enc = (text.match(/T:([^;]*)/i)||[])[1] || "";
+      let score = 0, reasons = [];
+      if(!enc || /^nopass$/i.test(enc)){
+        score += 30; reasons.push("Bu Wi-Fi ağı şifresiz (açık) görünüyor — açık ağlarda trafiğin izlenebilir.");
+      }
+      reasons.push(`Karekod, telefonunu "${ssid}" adlı Wi-Fi ağına otomatik bağlamak istiyor.`);
+      reasons.push("Tanımadığın bir yerde (kafe, otopark, havalimanı) karşına çıkan Wi-Fi karekodlarını bağlanmadan önce işletmeye sor.");
+      return { type:"Wi-Fi Ağı", score:Math.min(score,100), reasons, meta:`SSID: ${ssid}` };
+    }
+    if(/^(tel:|SMSTO:|SMS:)/i.test(text)){
+      const isSms = /^(SMSTO:|SMS:)/i.test(text);
+      const number = text.replace(/^(tel:|SMSTO:|SMS:)/i, "").split(":")[0];
+      let score = 0, reasons = [];
+      if(/^0?9\d{2}/.test(number.replace(/\D/g,""))){
+        score += 35; reasons.push("Numara, Türkiye'de yüksek ücretli olabilen bir premium hat (9xx) formatında görünüyor.");
+      }
+      reasons.push(isSms ? `Karekod, "${number}" numarasına önceden hazırlanmış bir SMS göndermeni istiyor.` : `Karekod, doğrudan "${number}" numarasını aramanı istiyor.`);
+      reasons.push("Tanımadığın numaraları aramadan/mesaj atmadan önce ait olduğu kurumu resmi kanaldan doğrula.");
+      return { type: isSms?"SMS Gönderimi":"Telefon Araması", score:Math.min(score,100), reasons, meta:number };
+    }
+    if(/^mailto:/i.test(text)){
+      const email = text.replace(/^mailto:/i, "").split("?")[0];
+      const domain = (email.split("@")[1]||"").toLowerCase();
+      let score = 0, reasons = [`Karekod "${email}" adresine e-posta göndermeni istiyor.`];
+      const known = Object.values(BRANDS).some(list => isOfficialDomain(domain, list));
+      for(const [brand, official] of Object.entries(BRANDS)){
+        if(domain.includes(brand) && !isOfficialDomain(domain, official)){
+          score += 35; reasons.push(`E-posta alan adı "${domain}", "${brand}" markasını taklit ediyor olabilir.`);
+        }
+      }
+      return { type:"E-posta", score:Math.min(score,100), reasons, meta:email };
+    }
+    if(/^(bitcoin:|ethereum:|litecoin:|BC1|bc1)/i.test(text)){
+      const addr = text.replace(/^(bitcoin:|ethereum:|litecoin:)/i, "").split("?")[0];
+      return { type:"Kripto Para Adresi", score:55,
+        reasons:[
+          `Karekod bir kripto para adresine ("${addr.slice(0,18)}…") ödeme yapmanı istiyor.`,
+          "Kripto ödemeleri geri alınamaz — göndermeden önce alıcının kimliğini mutlaka doğrula.",
+          "'Yatırım fırsatı', 'iki katına çıkar' gibi vaatlerle gelen kripto karekodları neredeyse her zaman dolandırıcılıktır."
+        ], meta: addr };
+    }
+    if(/^BEGIN:VCARD/i.test(text)){
+      const name = (text.match(/FN:(.*)/i)||[])[1] || "(isimsiz)";
+      return { type:"Kartvizit (vCard)", score:5,
+        reasons:["Karekod bir kişi rehberine kişi eklemek istiyor: " + name + ".", "Tanımadığın biri veriyorsa, rehberine eklemeden önce kimliğini teyit et."],
+        meta:name };
+    }
+    if(/^https?:\/\//i.test(text) || /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+(\/|$|\?)/i.test(text)){
+      const r = analyzeUrlContent(text);
+      return { type:"Bağlantı / Link", score:r.score, reasons: r.reasons.length?r.reasons:["Belirgin bir tehdit kalıbına rastlanmadı, yine de temkinli ol."], meta:text };
+    }
+    const r = analyzeTextContent(text);
+    return { type:"Düz Metin", score:r.score, reasons: r.reasons.length?r.reasons:["Belirgin bir dolandırıcılık kalıbına rastlanmadı."], meta:text.slice(0,80) };
+  }
+
+  function qrVerdict(score){
+    if(score < 25) return { label:"DÜŞÜK RİSK", cls:"safe" };
+    if(score < 55) return { label:"DİKKAT", cls:"warn" };
+    return { label:"YÜKSEK RİSK", cls:"danger" };
+  }
+
+  /* ======================= KAREKOD UI + KAMERA ======================= */
+  (function initQr(){
+    const qrOpenBtn = document.getElementById("qrOpenBtn");
+    const qrModal = document.getElementById("qrModal");
+    if(!qrOpenBtn || !qrModal) return;
+
+    const qrVideo = document.getElementById("qrVideo");
+    const qrStatus = document.getElementById("qrStatus");
+    const qrCloseBtn = document.getElementById("qrCloseBtn");
+    const qrResult = document.getElementById("qrResult");
+    const qrBadge = document.getElementById("qrBadge");
+    const qrScore = document.getElementById("qrScore");
+    const qrRaw = document.getElementById("qrRaw");
+    const qrFindings = document.getElementById("qrFindings");
+    const qrManualInput = document.getElementById("qrManualInput");
+    const qrManualBtn = document.getElementById("qrManualBtn");
+
+    let stream = null, rafId = null, stopped = true;
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d", { willReadFrequently:true });
+    let detector = null;
+    if("BarcodeDetector" in window){
+      try{ detector = new BarcodeDetector({ formats:["qr_code"] }); } catch(e){ detector = null; }
+    }
+
+    function renderResult(raw){
+      const r = analyzeQrPayload(raw);
+      const v = qrVerdict(r.score);
+      qrResult.classList.remove("hidden");
+      qrBadge.textContent = `${v.label} · ${r.type}`;
+      qrBadge.className = "qr-badge " + v.cls;
+      qrScore.textContent = `Risk Puanı: ${r.score}/100`;
+      qrRaw.textContent = raw.length > 220 ? raw.slice(0,220) + "…" : raw;
+      qrFindings.innerHTML = "";
+      r.reasons.forEach(reason => {
+        const div = document.createElement("div");
+        const t = r.score>=55 ? "bad" : r.score>=25 ? "warn" : "ok";
+        div.className = `finding ${t}`;
+        div.innerHTML = `<span>${t==="ok"?"✓":t==="warn"?"!":"✕"}</span><span>${reason}</span>`;
+        qrFindings.appendChild(div);
+      });
+      qrResult.scrollIntoView({ behavior:"smooth", block:"nearest" });
+    }
+
+    function openModal(){ qrModal.classList.remove("hidden"); qrStatus.textContent = "Kamera başlatılıyor…"; }
+    function stopCamera(){
+      stopped = true;
+      if(rafId) cancelAnimationFrame(rafId);
+      rafId = null;
+      if(stream){ stream.getTracks().forEach(t=>t.stop()); stream = null; }
+      if(qrVideo) qrVideo.srcObject = null;
+    }
+    function closeModal(){ qrModal.classList.add("hidden"); stopCamera(); }
+
+    async function startCamera(){
+      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+        qrStatus.textContent = "Bu tarayıcı kamera erişimini desteklemiyor."; return;
+      }
+      if(window.isSecureContext === false){
+        qrStatus.textContent = "Kamera için güvenli bağlantı (HTTPS) gerekli."; return;
+      }
+      try{
+        stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:"environment" } }, audio:false });
+        qrVideo.srcObject = stream;
+        await qrVideo.play();
+        stopped = false;
+        qrStatus.textContent = "Karekodu çerçeve içine hizala…";
+        tick();
+      } catch(err){
+        if(err && err.name === "NotAllowedError") qrStatus.textContent = "Kamera izni reddedildi. Site ayarlarından izin ver.";
+        else if(err && err.name === "NotFoundError") qrStatus.textContent = "Kullanılabilir bir kamera bulunamadı.";
+        else qrStatus.textContent = "Kamera başlatılamadı.";
+      }
+    }
+
+    async function tick(){
+      if(stopped || !qrVideo) return;
+      if(qrVideo.readyState === qrVideo.HAVE_ENOUGH_DATA && qrVideo.videoWidth > 0){
+        try{
+          let code = null;
+          if(detector){
+            const results = await detector.detect(qrVideo);
+            if(results && results.length) code = results[0].rawValue;
+          } else if(typeof jsQR === "function"){
+            canvas.width = qrVideo.videoWidth; canvas.height = qrVideo.videoHeight;
+            ctx.drawImage(qrVideo, 0, 0, canvas.width, canvas.height);
+            const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const res = jsQR(frame.data, frame.width, frame.height, { inversionAttempts:"dontInvert" });
+            if(res && res.data) code = res.data;
+          } else {
+            qrStatus.textContent = "Karekod çözücü yükleniyor, birkaç saniye bekle…";
+          }
+          if(code){ closeModal(); renderResult(code); return; }
+        } catch(e){ /* kare okunamadı, devam */ }
+      }
+      if(!stopped) rafId = requestAnimationFrame(tick);
+    }
+
+    qrOpenBtn.addEventListener("click", () => { openModal(); startCamera(); });
+    qrCloseBtn.addEventListener("click", closeModal);
+    qrModal.addEventListener("click", (e) => { if(e.target === qrModal) closeModal(); });
+    document.addEventListener("keydown", (e) => { if(e.key==="Escape" && !qrModal.classList.contains("hidden")) closeModal(); });
+
+    if(qrManualBtn){
+      qrManualBtn.addEventListener("click", () => {
+        const val = qrManualInput.value.trim();
+        if(!val) return;
+        renderResult(val);
+      });
+    }
+  })();
+
+  /* ======================= TARAMA (BAĞLANTI / SMS) + GEÇMİŞ ======================= */
+  (function initScan(){
+    const scanTabs = document.getElementById("scanTabs");
+    const scanInput = document.getElementById("scanInput");
+    const scanBtn = document.getElementById("scanBtn");
+    if(!scanTabs || !scanInput || !scanBtn) return;
+
+    const scanResult = document.getElementById("scanResult");
+    const scanBadge = document.getElementById("scanBadge");
+    const scanScore = document.getElementById("scanScore");
+    const scanFindings = document.getElementById("scanFindings");
+    const historyListEl = document.getElementById("scanHistoryList");
+    const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+
+    let scanMode = "link";
+    scanTabs.querySelectorAll("[data-scanmode]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        scanMode = btn.dataset.scanmode;
+        scanTabs.querySelectorAll("[data-scanmode]").forEach(b => b.classList.toggle("active", b === btn));
+        scanInput.placeholder = scanMode === "link"
+          ? "https:// ile başlayan bağlantıyı buraya yapıştır…"
+          : "Gelen SMS veya e-posta metnini buraya yapıştır…";
+      });
+    });
+
+    function escapeHtml(str){
+      return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    function renderHistory(){
+      if(!historyListEl) return;
+      let history = [];
+      try{ history = JSON.parse(localStorage.getItem("kizilkaya_history") || "[]"); } catch(e){ history = []; }
+      if(history.length === 0){
+        historyListEl.innerHTML = '<p class="empty">Henüz tarama yapılmadı.</p>';
+        return;
+      }
+      historyListEl.innerHTML = history.map(item => {
+        const v = qrVerdict(item.score);
+        const typeLabel = item.type === "link" ? "Bağlantı" : "Mesaj";
+        return `<div class="history-item">
+          <div>
+            <div class="h-text" title="${escapeHtml(item.input)}">${escapeHtml(item.input)}</div>
+            <div class="h-meta">${item.date} · ${typeLabel}</div>
+          </div>
+          <span class="h-badge ${v.cls}">${v.label} (${item.score})</span>
+        </div>`;
+      }).join("");
+    }
+
+    function saveHistory(type, rawInput, score){
+      try{
+        let history = JSON.parse(localStorage.getItem("kizilkaya_history") || "[]");
+        history.unshift({
+          date: new Date().toLocaleString("tr-TR"),
+          type,
+          input: rawInput.substring(0,80) + (rawInput.length > 80 ? "…" : ""),
+          score
+        });
+        localStorage.setItem("kizilkaya_history", JSON.stringify(history.slice(0,30)));
+        renderHistory();
+      } catch(e){ /* localStorage kullanılamıyor olabilir */ }
+    }
+
+    if(clearHistoryBtn){
+      clearHistoryBtn.addEventListener("click", () => {
+        if(confirm("Tüm tarama geçmişi silinecek. Emin misin?")){
+          localStorage.removeItem("kizilkaya_history");
+          renderHistory();
+        }
+      });
+    }
+
+    scanBtn.addEventListener("click", () => {
+      const raw = scanInput.value.trim();
+      if(!raw){ alert("Lütfen taranacak bir bağlantı veya mesaj gir."); return; }
+
+      scanBtn.disabled = true;
+      scanBtn.textContent = "TARANIYOR…";
+
+      setTimeout(() => {
+        scanBtn.disabled = false;
+        scanBtn.textContent = "TARA";
+
+        const r = scanMode === "link" ? analyzeUrlContent(raw) : analyzeTextContent(raw);
+        const v = qrVerdict(r.score);
+
+        scanResult.classList.remove("hidden");
+        scanBadge.textContent = v.label;
+        scanBadge.className = "qr-badge " + v.cls;
+        scanScore.textContent = `Risk Puanı: ${r.score}/100`;
+
+        scanFindings.innerHTML = "";
+        const reasons = r.reasons.length ? r.reasons : ["Belirgin bir dolandırıcılık veya şüpheli yapı kalıbına rastlanmadı. Yine de temkinli ol."];
+        reasons.forEach(reason => {
+          const div = document.createElement("div");
+          const t = r.score>=55 ? "bad" : r.score>=25 ? "warn" : "ok";
+          div.className = `finding ${t}`;
+          div.innerHTML = `<span>${t==="ok"?"✓":t==="warn"?"!":"✕"}</span><span>${reason}</span>`;
+          scanFindings.appendChild(div);
+        });
+
+        saveHistory(scanMode, raw, r.score);
+      }, 700);
+    });
+
+    renderHistory();
+  })();
+
   /* ======================= SERVICE WORKER ======================= */
   if("serviceWorker" in navigator){
     window.addEventListener("load", () => {
@@ -319,3 +772,4 @@
   }
 
 })();
+
