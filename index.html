@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KIZILKAYA — Mobil Siber Güvenlik</title>
+<meta name="theme-color" content="#0a0908">
+<meta name="description" content="Vatandaşlar için ücretsiz mobil siber güvenlik rehberi: şifre sağlığı, farkındalık ipuçları, acil durum rehberi ve aile güvenliği.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-32.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ===== HEADER ===== -->
+  <header class="topbar">
+    <div class="trace trace-left" aria-hidden="true"></div>
+    <div class="brand">
+      <img src="icons/icon-192.png" alt="" class="brand-mark">
+      <div class="brand-text">
+        <span class="brand-name">KIZILKAYA</span>
+        <span class="brand-tag">MOBİL SİBER GÜVENLİK</span>
+      </div>
+    </div>
+    <div class="trace trace-right" aria-hidden="true"></div>
+  </header>
+
+  <!-- ===== MAIN VIEWS ===== -->
+  <main class="views">
+
+    <!-- ---------- ANA SAYFA ---------- -->
+    <section class="view" id="view-home" data-view>
+      <h1 class="view-title">Merhaba.</h1>
+      <p class="view-sub">Bugün dijital hayatını biraz daha güvenli hale getir.</p>
+
+      <article class="tip-card" id="dailyTip">
+        <span class="eyebrow">Günün İpucu</span>
+        <p class="tip-text" id="dailyTipText">—</p>
+      </article>
+
+      <div class="section-label">Hızlı Güvenlik Kontrolü</div>
+      <div class="shield-check" id="shieldCheck">
+        <div class="shield-visual" aria-hidden="true">
+          <svg viewBox="0 0 100 116" class="shield-svg">
+            <path id="shieldOutline" d="M50 2 L94 18 V54 C94 84 74 104 50 114 C26 104 6 84 6 54 V18 Z"/>
+            <clipPath id="shieldClip"><path d="M50 2 L94 18 V54 C94 84 74 104 50 114 C26 104 6 84 6 54 V18 Z"/></clipPath>
+            <rect id="shieldFill" x="0" y="116" width="100" height="116" clip-path="url(#shieldClip)"/>
+          </svg>
+          <span class="shield-score" id="shieldScore">0/5</span>
+        </div>
+        <ul class="check-list" id="checkList"></ul>
+      </div>
+
+      <div class="section-label">Modüller</div>
+      <div class="module-grid">
+        <button class="module-card" data-goto="password">
+          <span class="module-icon">🔒</span>
+          <span class="module-name">Şifre Sağlığı</span>
+          <span class="module-desc">Şifreni cihazında test et</span>
+        </button>
+        <button class="module-card" data-goto="tips">
+          <span class="module-icon">💡</span>
+          <span class="module-name">Farkındalık</span>
+          <span class="module-desc">Dolandırıcılığa karşı ipuçları</span>
+        </button>
+        <button class="module-card" data-goto="emergency">
+          <span class="module-icon">🚨</span>
+          <span class="module-name">Acil Durum</span>
+          <span class="module-desc">Başına bir şey geldiyse</span>
+        </button>
+        <button class="module-card" data-goto="family">
+          <span class="module-icon">🛡️</span>
+          <span class="module-name">Aile Güvenliği</span>
+          <span class="module-desc">Çocuklar için rehber</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ---------- ŞİFRE SAĞLIĞI ---------- -->
+    <section class="view" id="view-password" data-view hidden>
+      <h1 class="view-title">Şifre Sağlığı</h1>
+      <p class="view-sub">Yazdığın hiçbir karakter bu cihazdan dışarı çıkmaz. Kontrol tamamen yerel yapılır.</p>
+
+      <div class="trust-banner">
+        <span class="trust-icon">🔒</span>
+        <span>İnternete bağlı değilken de çalışır — hiçbir sunucuya gönderim yok.</span>
+      </div>
+
+      <label class="field-label" for="pwInput">Test etmek istediğin şifre</label>
+      <div class="pw-input-wrap">
+        <input type="password" id="pwInput" class="pw-input" placeholder="Şifreni buraya yaz" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <button class="pw-toggle" id="pwToggle" type="button" aria-label="Şifreyi göster">👁</button>
+      </div>
+
+      <div class="meter-track"><div class="meter-fill" id="pwMeterFill"></div></div>
+      <div class="meter-label" id="pwMeterLabel">Bir şifre yaz ve anında sonucu gör</div>
+
+      <div class="pw-findings" id="pwFindings"></div>
+
+      <div class="section-label">Güçlü Şifre Kuralları</div>
+      <ul class="tip-list">
+        <li>En az 12 karakter kullan — uzunluk, karmaşıklıktan daha güçlüdür.</li>
+        <li>Her hesap için farklı bir şifre seç, aynı şifreyi tekrar kullanma.</li>
+        <li>Doğum tarihi, isim veya "1234" gibi tahmin edilebilir kalıplardan kaçın.</li>
+        <li>Şifre yerine akılda kalıcı bir cümle kullan: "Kahvemi7SütsüzSeverim!"</li>
+        <li>Mümkün olan her yerde iki adımlı doğrulamayı (2FA) aç.</li>
+      </ul>
+    </section>
+
+    <!-- ---------- FARKINDALIK İPUÇLARI ---------- -->
+    <section class="view" id="view-tips" data-view hidden>
+      <h1 class="view-title">Farkındalık İpuçları</h1>
+      <p class="view-sub">Kategoriye göre gözden geçir, her biri gerçek vakalardan derlendi.</p>
+
+      <div class="chip-row" id="tipFilters"></div>
+      <div class="tip-accordion" id="tipAccordion"></div>
+    </section>
+
+    <!-- ---------- ACİL DURUM ---------- -->
+    <section class="view" id="view-emergency" data-view hidden>
+      <h1 class="view-title">Acil Durum Rehberi</h1>
+      <p class="view-sub">Başına geleni seç, adım adım ne yapman gerektiğini gör.</p>
+
+      <div class="scenario-list" id="scenarioList"></div>
+
+      <div class="trust-banner amber">
+        <span class="trust-icon">📞</span>
+        <span>Can güvenliğin tehlikedeyse önce 112'yi ara. Bu rehber yalnızca dijital olaylar içindir.</span>
+      </div>
+    </section>
+
+    <!-- ---------- AİLE GÜVENLİĞİ ---------- -->
+    <section class="view" id="view-family" data-view hidden>
+      <h1 class="view-title">Aile Güvenliği</h1>
+      <p class="view-sub">Çocuklarının dijital dünyasını birlikte güvenli hale getirin.</p>
+
+      <div class="family-accordion" id="familyAccordion"></div>
+    </section>
+
+  </main>
+
+  <!-- ===== BOTTOM NAV ===== -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="nav-btn" data-goto="home" aria-current="page">
+      <span class="nav-icon">⌂</span><span class="nav-label">Ana Sayfa</span>
+    </button>
+    <button class="nav-btn" data-goto="password">
+      <span class="nav-icon">🔒</span><span class="nav-label">Şifre</span>
+    </button>
+    <button class="nav-btn" data-goto="tips">
+      <span class="nav-icon">💡</span><span class="nav-label">İpuçları</span>
+    </button>
+    <button class="nav-btn" data-goto="emergency">
+      <span class="nav-icon">🚨</span><span class="nav-label">Acil Durum</span>
+    </button>
+    <button class="nav-btn" data-goto="family">
+      <span class="nav-icon">🛡️</span><span class="nav-label">Aile</span>
+    </button>
+  </nav>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
+
