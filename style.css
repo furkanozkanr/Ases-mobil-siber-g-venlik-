@@ -188,6 +188,8 @@ button{ font-family: inherit; }
 .module-card:active{ transform: scale(0.97); }
 .module-card:hover{ border-color: rgba(230,50,50,0.5); }
 .module-icon{ font-size:1.4rem; }
+.module-icon svg{ width:26px; height:26px; display:block; color: var(--red-soft); }
+.nav-btn .nav-icon svg{ width:20px; height:20px; display:block; }
 .module-name{ font-family:'Oswald',sans-serif; font-weight:600; font-size:0.92rem; margin-top:4px; }
 .module-desc{ font-size:0.74rem; color: var(--gray); }
 
