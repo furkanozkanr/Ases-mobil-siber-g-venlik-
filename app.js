@@ -89,6 +89,8 @@
 
   const pwInput = document.getElementById("pwInput");
   const pwToggle = document.getElementById("pwToggle");
+  const pwEyeOpen = document.getElementById("pwEyeOpen");
+  const pwEyeClosed = document.getElementById("pwEyeClosed");
   const pwFindings = document.getElementById("pwFindings");
   const meterFill = document.getElementById("pwMeterFill");
   const meterLabel = document.getElementById("pwMeterLabel");
@@ -96,7 +98,9 @@
   pwToggle.addEventListener("click", () => {
     const isPw = pwInput.type === "password";
     pwInput.type = isPw ? "text" : "password";
-    pwToggle.textContent = isPw ? "🙈" : "👁";
+    pwEyeOpen.classList.toggle("hidden", isPw);
+    pwEyeClosed.classList.toggle("hidden", !isPw);
+    pwToggle.setAttribute("aria-label", isPw ? "Şifreyi gizle" : "Şifreyi göster");
   });
 
   function hasSequential(pw){
