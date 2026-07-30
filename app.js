@@ -19,7 +19,8 @@
       b.toggleAttribute("aria-current", active);
       if(active) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current");
     });
-    document.querySelector(".views").scrollTo?.(0,0);
+    var viewsEl = document.querySelector(".views");
+    if(viewsEl && typeof viewsEl.scrollTo === "function"){ viewsEl.scrollTo(0,0); }
     window.scrollTo(0,0);
   }
   navButtons.forEach(b => b.addEventListener("click", () => goto(b.dataset.goto)));
@@ -1028,4 +1029,3 @@
   }
 
 })();
-
