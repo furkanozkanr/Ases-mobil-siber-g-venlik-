@@ -1,4 +1,4 @@
-const CACHE_NAME = "kizilkaya-v10";
+const CACHE_NAME = "kizilkaya-v11";
 const ASSETS = [
   "./",
   "./index.html",
@@ -6,7 +6,8 @@ const ASSETS = [
   "./app.js",
   "./manifest.json",
   "./icon-192.png",
-  "./icon-512.png"
+  "./icon-512.png",
+  "./badge-192.png"
 ];
 
 self.addEventListener("install", (event) => {
