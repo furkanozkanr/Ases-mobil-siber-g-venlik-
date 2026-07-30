@@ -121,6 +121,13 @@
           <span class="module-name">Virüs Türleri</span>
           <span class="module-desc">Trojan, casus yazılım ve diğer tehditler</span>
         </button>
+        <button class="module-card" data-goto="assistant">
+          <span class="module-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5 h16 a1.5 1.5 0 0 1 1.5 1.5 v9 a1.5 1.5 0 0 1 -1.5 1.5 H9 L4.5 21 V17.5 H4 a1.5 1.5 0 0 1 -1.5 -1.5 V7 a1.5 1.5 0 0 1 1.5 -1.5 Z"/><circle cx="9" cy="11.5" r="1" fill="currentColor" stroke="none"/><circle cx="13.5" cy="11.5" r="1" fill="currentColor" stroke="none"/><circle cx="18" cy="11.5" r="1" fill="currentColor" stroke="none"/></svg>
+          </span>
+          <span class="module-name">Kızılkaya Asistan</span>
+          <span class="module-desc">Aklına takılanı sor, anında yanıt al</span>
+        </button>
       </div>
 
       <div class="section-label">Tarihçe</div>
@@ -361,6 +368,22 @@
       </div>
     </section>
 
+    <!-- ---------- KIZILKAYA ASİSTAN ---------- -->
+    <section class="view" id="view-assistant" data-view hidden>
+      <h1 class="view-title">Kızılkaya Asistan</h1>
+      <p class="view-sub">Siber güvenlikle ilgili aklına takılanı yaz, sana yardımcı olayım. Tüm yanıtlar cihazında üretilir, hiçbir mesaj dışarıya gönderilmez.</p>
+
+      <div class="chat-window" id="chatWindow"></div>
+
+      <div class="chat-input-row">
+        <input type="text" id="chatInput" class="chat-input" placeholder="Bir soru yaz…" autocomplete="off">
+        <button type="button" id="chatSend" class="chat-send" aria-label="Gönder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12 L20 4 L13 20 L11 13 L4 12 Z"/></svg>
+        </button>
+      </div>
+      <div class="chip-row" id="chatSuggestions"></div>
+    </section>
+
   </main>
 
   <!-- KAREKOD KAMERA MODALI -->
@@ -429,6 +452,12 @@
     </button>
     <button class="nav-btn" data-goto="threats">
       <span class="nav-icon">🦠</span><span class="nav-label">Virüsler</span>
+    </button>
+    <button class="nav-btn" data-goto="assistant">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5 h16 a1.5 1.5 0 0 1 1.5 1.5 v9 a1.5 1.5 0 0 1 -1.5 1.5 H9 L4.5 21 V17.5 H4 a1.5 1.5 0 0 1 -1.5 -1.5 V7 a1.5 1.5 0 0 1 1.5 -1.5 Z"/><circle cx="9" cy="11.5" r="1" fill="currentColor" stroke="none"/><circle cx="13.5" cy="11.5" r="1" fill="currentColor" stroke="none"/><circle cx="18" cy="11.5" r="1" fill="currentColor" stroke="none"/></svg>
+      </span>
+      <span class="nav-label">Asistan</span>
     </button>
   </nav>
 
