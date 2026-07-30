@@ -87,7 +87,7 @@
     const opts = {
       body,
       icon: "icon-192.png",
-      badge: "icon-192.png",
+      badge: "badge-192.png",
       tag: tag || "kizilkaya",
       renotify: true
     };
@@ -1028,3 +1028,4 @@
   }
 
 })();
+
