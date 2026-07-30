@@ -1,35 +1,5 @@
-"KIZILKAYA" PROJESİ TELİF HAKKI VE LİSANS BELGESİ
-Tüm Hakları Saklıdır (All Rights Reserved)
-1. Proje Bilgileri
-• Proje Adı: KIZILKAYA — Mobil Siber Güvenlik Uygulaması
-• Telif Hakkı Sahipleri: Furkan Özkan ve Oğuzhan Özkan
-• Yürürlük Tarihi: 29.07.2026
-Bu belge, "KIZILKAYA" adlı mobil siber güvenlik uygulamasına ait tüm kaynak kodu, tasarım, logo, metin içerikleri ve ilişkili materyallerin ("Eser") telif hakkı sahipliğini ve kullanım koşullarını düzenler.
-2. Telif Hakkı Sahipliği
-Eser üzerindeki tüm haklar, "KIZILKAYA" Projesi Görev Dağılımı ve Rol Paylaşım Belgesi'nde (29.07.2026) belirlenen roller çerçevesinde, aşağıdaki kişilere aittir:
-• Furkan Özkan — Proje Fikir Sahibi, Eğitmen ve Kontrol Sorumlusu
-• Oğuzhan Özkan — Kurucu Ortak / Geliştirici
-Eser'in tamamı üzerinde her iki taraf da eşit ve müşterek telif hakkına sahiptir. Bu hak, tarafların yazılı ortak mutabakatı olmadan üçüncü kişilere devredilemez.
-3. Kullanım Kısıtlamaları
-Aksi belirtilmedikçe, bu Eser üzerinde aşağıdaki eylemler telif hakkı sahiplerinin açık, yazılı izni olmadan YASAKTIR:
-• Kaynak kodun tamamının veya bir kısmının kopyalanması, çoğaltılması veya dağıtılması.
-• Eser'in değiştirilmesi, türev çalışma oluşturulması veya başka bir isimle yeniden yayınlanması.
-• Eser'in ticari veya ticari olmayan herhangi bir amaçla yeniden satılması, lisanslanması veya sunulması.
-• Logo, marka adı ("KIZILKAYA") ve görsel kimliğin izinsiz kullanılması.
-4. İzin Verilen Kullanım
-Uygulamanın son kullanıcı olarak (uygulamayı yükleyip kullanma anlamında) vatandaşlar tarafından ücretsiz kullanılması serbesttir. Bu izin, kaynak koduna veya Eser'in başka bir kopyasının oluşturulmasına herhangi bir hak tanımaz.
-5. Sorumluluk Reddi
-Eser "olduğunu gibi" sunulur. Telif hakkı sahipleri, Eser'in kullanımından doğabilecek doğrudan veya dolaylı hiçbir zarardan sorumlu tutulamaz.
-6. Yürürlük
-İşbu Telif Hakkı ve Lisans Belgesi, "KIZILKAYA" projesi için Furkan Özkan ve Oğuzhan Özkan arasında mutabakata varılarak dijital ortamda yürürlüğe girmiştir.
+Copyright (c) 2026 Furkan Özkan. Tüm Hakları Saklıdır.
 
-───
+"KIZILKAYA" (Mobil Siber Güvenlik Uygulaması) projesine ait tüm kaynak kodları, yazılımlar, tasarımlar, logolar ve fikri mülkiyet hakları münhasıran ve tamamen Furkan Özkan'a aittir. 
 
-Telif Hakkı Sahibi
-Tarih: 29.07.2026
-Furkan Özkan
-Telif Hakkı Sahibi
-Tarih: 29.07.2026
-Oğuzhan Özkan
-
-
+İşbu Eser'in (kodların, tasarımların ve içeriğin) yazılı ön izni olmaksızın kopyalanması, çoğaltılması, dağıtılması, değiştirilmesi, başka bir projede kullanılması veya ticari/ticari olmayan herhangi bir amaçla satılması/lisanslanması kesinlikle YASAKTIR.
