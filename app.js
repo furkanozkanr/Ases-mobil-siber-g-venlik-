@@ -78,6 +78,80 @@
   });
   updateShield();
 
+  /* ======================= BİLDİRİMLER (YEREL PUSH) ======================= */
+  const notifBtn = document.getElementById("notifBtn");
+  const notifDesc = document.getElementById("notifDesc");
+
+  function showAppNotification(title, body, tag){
+    if(!("Notification" in window) || Notification.permission !== "granted") return;
+    const opts = {
+      body,
+      icon: "icon-192.png",
+      badge: "icon-192.png",
+      tag: tag || "kizilkaya",
+      renotify: true
+    };
+    if(navigator.serviceWorker && navigator.serviceWorker.ready){
+      navigator.serviceWorker.ready.then(reg => reg.showNotification(title, opts)).catch(() => {
+        try{ new Notification(title, opts); } catch(e){}
+      });
+    } else {
+      try{ new Notification(title, opts); } catch(e){}
+    }
+  }
+
+  function refreshNotifButton(){
+    if(!("Notification" in window)){
+      notifBtn.textContent = "Desteklenmiyor";
+      notifBtn.disabled = true;
+      notifBtn.className = "notif-btn off";
+      notifDesc.textContent = "Bu tarayıcı bildirimleri desteklemiyor.";
+      return;
+    }
+    if(Notification.permission === "granted"){
+      notifBtn.textContent = "Açık";
+      notifBtn.className = "notif-btn on";
+      notifDesc.textContent = "Bildirimler açık — tehlikeli karekod veya zayıf şifre tespit edilince haber vereceğim.";
+    } else if(Notification.permission === "denied"){
+      notifBtn.textContent = "Engellendi";
+      notifBtn.className = "notif-btn off";
+      notifDesc.textContent = "Bildirimlere tarayıcı ayarlarından izin vermen gerekiyor.";
+    } else {
+      notifBtn.textContent = "Aç";
+      notifBtn.className = "notif-btn";
+      notifDesc.textContent = "Tehlikeli bir karekod ya da zayıf şifre tespit edildiğinde, logolu bir bildirimle anında uyar.";
+    }
+  }
+
+  if(notifBtn){
+    refreshNotifButton();
+    notifBtn.addEventListener("click", async () => {
+      if(!("Notification" in window) || Notification.permission === "denied") return;
+      if(Notification.permission === "granted"){
+        showAppNotification("KIZILKAYA", "Bildirimler zaten açık. Seni güvende tutmaya devam ediyorum.", "info");
+        return;
+      }
+      const perm = await Notification.requestPermission();
+      refreshNotifButton();
+      if(perm === "granted"){
+        showAppNotification("KIZILKAYA", "Bildirimler açıldı. Tehlikeli bir durum tespit edersem sana haber vereceğim.", "welcome");
+      }
+    });
+  }
+
+  // Günde bir kez, bildirim izni açıksa günün ipucunu bildirim olarak da gönder
+  (function dailyTipNotification(){
+    if(!("Notification" in window)) return;
+    const todayKey = new Date().toISOString().slice(0,10);
+    const lastShown = localStorage.getItem("kizilkaya_daily_notif");
+    if(Notification.permission === "granted" && lastShown !== todayKey){
+      setTimeout(() => {
+        showAppNotification("Günün İpucu — KIZILKAYA", dailyTips[dayIndex], "daily-tip");
+        localStorage.setItem("kizilkaya_daily_notif", todayKey);
+      }, 4000);
+    }
+  })();
+
   /* ======================= ŞİFRE SAĞLIĞI (tamamen yerel) ======================= */
   const commonPasswords = new Set([
     "123456","123456789","12345678","password","111111","123123","qwerty","abc123",
@@ -178,6 +252,13 @@
       div.innerHTML = `<span>${f.t === "ok" ? "✓" : f.t === "warn" ? "!" : "✕"}</span><span>${f.m}</span>`;
       pwFindings.appendChild(div);
     });
+  });
+  pwInput.addEventListener("blur", () => {
+    if(pwInput.value.length === 0) return;
+    const { score } = analyze(pwInput.value);
+    if(score < 30){
+      showAppNotification("Zayıf Şifre Tespit Edildi", "Test ettiğin şifre kolay kırılabilir görünüyor. Şifre Sağlığı sekmesindeki önerilere göz at.", "weak-password");
+    }
   });
 
   /* ======================= FARKINDALIK İPUÇLARI ======================= */
@@ -589,6 +670,9 @@
         qrFindings.appendChild(div);
       });
       qrResult.scrollIntoView({ behavior:"smooth", block:"nearest" });
+      if(v.cls === "danger"){
+        showAppNotification("Tehlikeli Karekod!", "Az önce taradığın karekod yüksek riskli görünüyor. Detaylar için uygulamayı aç.", "qr-danger");
+      }
     }
 
     function openModal(){ qrModal.classList.remove("hidden"); qrStatus.textContent = "Kamera başlatılıyor…"; }
@@ -762,6 +846,9 @@
         });
 
         saveHistory(scanMode, raw, r.score);
+        if(v.cls === "danger"){
+          showAppNotification("Şüpheli İçerik Tespit Edildi", "Az önce taradığın link/mesaj yüksek riskli görünüyor. Detaylar için uygulamayı aç.", "scan-danger");
+        }
       }, 700);
     });
 
@@ -941,4 +1028,3 @@
   }
 
 })();
-
