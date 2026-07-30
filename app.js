@@ -768,6 +768,171 @@
     renderHistory();
   })();
 
+  /* ======================= KIZILKAYA ASİSTAN (YEREL SOHBET MOTORU) =======================
+     Not: Bu bir yapay zeka API'sine bağlanmaz. Tamamen cihazda çalışan, anahtar kelime
+     eşleştirmeli yerel bir bilgi motorudur — hiçbir mesaj internete gönderilmez. Her konu
+     için birden fazla cevap kalıbı tutulur ve sırayla döndürülür, böylece aynı soruya hep
+     aynı cevap verilmez. */
+
+  const assistantTopics = [
+    { id:"sifre", keywords:["şifre","sifre","parola","şifremi","şifre gücü","güçlü şifre","zayıf şifre","şifre oluştur","şifre değiştir","kaç karakter","parolamı"],
+      responses:[
+        "Güçlü bir şifre en az 12 karakter olmalı; büyük-küçük harf, rakam ve sembol içermeli. Şifre Sağlığı sekmesinden kendi şifreni test edebilirsin, hiçbir şey sunucuya gönderilmez.",
+        "Şifreni farklı hesaplarda tekrar kullanma. 'Şifre Sağlığı' modülüne gidip anında güçlü mü zayıf mı görebilirsin.",
+        "En sık çalınan şifreler arasında '123456' ve 'qwerty' gibi basit kalıplar var. Bunun yerine akılda kalıcı bir cümle kullan, örneğin 'Kahvemi7SütsüzSeverim!'."
+      ]},
+    { id:"2fa", keywords:["2fa","iki adımlı","iki adimli","iki faktörlü","doğrulama kodu","otp kodu","dogrulama"],
+      responses:[
+        "İki adımlı doğrulama (2FA), şifren çalınsa bile hesabına girişi zorlaştırır. E-posta ve bankacılık hesaplarında mutlaka açmanı öneririm.",
+        "2FA açıkken giriş için şifrenin yanında telefonuna gelen bir kod da gerekir. Genelde Ayarlar > Güvenlik bölümünden açabilirsin."
+      ]},
+    { id:"phishing", keywords:["phishing","oltalama","dolandırıcılık","dolandirici","sahte link","sahte site","sahte mesaj","tuzak","kandırıl"],
+      responses:[
+        "Bilmediğin bir linke tıklamadan önce adres çubuğunu kontrol et. Şüpheliysen 'Tarama' modülüne yapıştırıp test edebilirsin.",
+        "Bankalar SMS ile şifre veya kart bilgisi istemez. Bir mesaj aciliyet hissi yaratıyorsa büyük ihtimalle dolandırıcılıktır.",
+        "'Hesabın askıya alındı' gibi panik yaratan mesajlara hemen tıklama, önce Farkındalık İpuçları'ndaki benzer örneklere göz at."
+      ]},
+    { id:"banka", keywords:["banka","kart bilgisi","hesabım çalındı","otp","iban","yetkisiz işlem","kartım çalındı"],
+      responses:[
+        "Bankan seni asla telefonla arayıp OTP kodu istemez. Böyle bir talep gelirse kapat, bankanı resmi hattından ara.",
+        "Kartın veya hesabınla ilgili şüpheli bir işlem gördüysen bankanın 7/24 çağrı merkezini arayıp hemen bloke ettir. Acil Durum Rehberi'nde adım adım anlatıyorum."
+      ]},
+    { id:"wifi", keywords:["wifi","wi-fi","kablosuz ağ","halka açık ağ","hotspot"],
+      responses:[
+        "Kafe, havaalanı gibi halka açık Wi-Fi'lerde bankacılık işlemi yapma, mümkünse mobil verini kullan.",
+        "Ev modeminin varsayılan şifresini değiştirmeyi unutma, fabrika şifreleri internette herkese açık listelerde bulunuyor."
+      ]},
+    { id:"qr", keywords:["karekod","qr kod","qr","kare kod","kamera tarama"],
+      responses:[
+        "Karekod Tarama modülünden karşına çıkan her QR kodu kamerayla test edebilirsin, gerçek adresi görmeden ödeme yapma.",
+        "Restoran veya otoparkta üzerine yapıştırılmış sahte QR kodlar seni sahte bir ödeme sayfasına yönlendirebilir, dikkatli ol."
+      ]},
+    { id:"virus", keywords:["virüs","virus","trojan","casus yazılım","malware","zararlı yazılım"],
+      responses:[
+        "Virüs Türleri modülünde trojan, casus yazılım gibi tehditleri ve nasıl bulaştıklarını anlatıyorum.",
+        "Bilinmeyen kaynaklardan APK indirmek en yaygın virüs bulaşma yollarından biri, sadece resmi mağazaları kullan."
+      ]},
+    { id:"telefon", keywords:["telefonum çalındı","telefonum kayboldu","telefon kayıp","çalıntı telefon","kayıp telefon"],
+      responses:[
+        "Önce Google (Find My Device) veya Apple (Find My iPhone) üzerinden telefonu kilitle, sonra operatörüne hattını dondurmasını söyle. Acil Durum Rehberi'nde tüm adımlar var.",
+        "Telefon kaybolduğunda önce başka bir cihazdan hesaplarının şifrelerini değiştir, sonra en yakın karakola IMEI ile bildirimde bulun."
+      ]},
+    { id:"sosyal", keywords:["sosyal medya","instagram","facebook","whatsapp","hesabım çalındı","hesabim calindi"],
+      responses:[
+        "Hesabın çalındıysa hemen şifreni değiştir, tüm cihazlardan oturumu kapat ve 2FA aç. Acil Durum Rehberi'nde detaylı adımlar var.",
+        "Doğum tarihi, telefon numarası gibi bilgileri herkese açık paylaşma, gizlilik ayarlarını gözden geçir."
+      ]},
+    { id:"aile", keywords:["çocuğum","cocugum","aile güvenliği","ebeveyn kontrolü","çocuk telefon","çocuğuma"],
+      responses:[
+        "Google Family Link veya Apple Ekran Süresi ile çocuğunun ekran süresini ve uygulama izinlerini yönetebilirsin. Aile Güvenliği modülünde detaylar var.",
+        "Çocuğunla açık iletişim kurmak yasaklamaktan daha koruyucudur; internette rahatsız olduğunda sana gelebileceğini bilmesi önemli."
+      ]},
+    { id:"izinler", keywords:["uygulama izni","konum izni","kamera izni","mikrofon izni","izinlerini"],
+      responses:[
+        "Bir fener uygulamasının konumuna ihtiyacı yoktur. Telefon ayarlarından uygulama izinlerini düzenli kontrol et ve gereksiz olanları kapat."
+      ]},
+    { id:"guncelleme", keywords:["güncelleme","guncelleme","güncel değil","update"],
+      responses:[
+        "Güncellemelerin çoğu bilinen güvenlik açıklarını kapatır, 'sonra hatırlat' yerine en kısa sürede güncelle."
+      ]},
+    { id:"vpn", keywords:["vpn"],
+      responses:[
+        "VPN, özellikle halka açık Wi-Fi'lerde trafiğini şifreler ama şifre yönetimi ve 2FA kadar kritik değildir; güvenilir bir sağlayıcı seçmek önemli."
+      ]},
+    { id:"selam", keywords:["merhaba","selam","iyi günler","naber","selamlar"],
+      responses:[
+        "Merhaba! Siber güvenlikle ilgili aklına takılan bir şey var mı?",
+        "Selam, sana nasıl yardımcı olabilirim?"
+      ]},
+    { id:"tesekkur", keywords:["teşekkür","tesekkur","sağol","sagol","eyvallah"],
+      responses:[
+        "Rica ederim, güvende kal!",
+        "Ne demek, başka sorun olursa buradayım."
+      ]},
+    { id:"kimlik", keywords:["sen kimsin","nesin","yapay zeka mısın","kimsin"],
+      responses:[
+        "Ben Kızılkaya'nın yerel asistanıyım. Cihazında çalışırım ve hiçbir mesajını dışarıya göndermem."
+      ]}
+  ];
+
+  const fallbackResponses = [
+    "Bunu tam olarak anlayamadım. Şifre, dolandırıcılık, Wi-Fi, karekod, virüs ya da aile güvenliği gibi konularda soru sorabilirsin.",
+    "Bu konuda net bir bilgim yok, ama uygulamadaki modüllerden birine bakmak isteyebilirsin: Şifre Sağlığı, Farkındalık İpuçları, Acil Durum ya da Aile Güvenliği.",
+    "Sanırım bunu farklı bir şekilde sormalısın. Örneğin 'şifrem güvenli mi' ya da 'wifi güvenliği' gibi dene."
+  ];
+
+  const assistantState = { topicIndex:{}, fallbackIndex:0 };
+
+  function normalizeTr(str){
+    return str
+      .toLocaleLowerCase("tr")
+      .replace(/[.,!?;:'"()]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function assistantReply(userText){
+    const input = normalizeTr(userText);
+    let bestTopic = null, bestScore = 0;
+    assistantTopics.forEach(topic => {
+      let score = 0;
+      topic.keywords.forEach(k => { if(input.includes(normalizeTr(k))) score++; });
+      if(score > bestScore){ bestScore = score; bestTopic = topic; }
+    });
+    if(bestTopic){
+      const i = assistantState.topicIndex[bestTopic.id] || 0;
+      const reply = bestTopic.responses[i % bestTopic.responses.length];
+      assistantState.topicIndex[bestTopic.id] = i + 1;
+      return reply;
+    }
+    const reply = fallbackResponses[assistantState.fallbackIndex % fallbackResponses.length];
+    assistantState.fallbackIndex++;
+    return reply;
+  }
+
+  const chatWindow = document.getElementById("chatWindow");
+  const chatInput = document.getElementById("chatInput");
+  const chatSend = document.getElementById("chatSend");
+  const chatSuggestions = document.getElementById("chatSuggestions");
+
+  function addChatMsg(text, who){
+    const div = document.createElement("div");
+    div.className = `chat-msg ${who}`;
+    div.textContent = text;
+    chatWindow.appendChild(div);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+    return div;
+  }
+
+  function sendChat(text){
+    const trimmed = text.trim();
+    if(!trimmed) return;
+    addChatMsg(trimmed, "user");
+    chatInput.value = "";
+    const typing = document.createElement("div");
+    typing.className = "chat-msg bot typing";
+    typing.innerHTML = "<span></span><span></span><span></span>";
+    chatWindow.appendChild(typing);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+    setTimeout(() => {
+      typing.remove();
+      addChatMsg(assistantReply(trimmed), "bot");
+    }, 500 + Math.random() * 400);
+  }
+
+  if(chatWindow){
+    addChatMsg("Merhaba! Ben Kızılkaya Asistan. Şifreler, dolandırıcılık, Wi-Fi, karekod, virüsler veya aile güvenliği hakkında bana soru sorabilirsin.", "bot");
+    ["Şifrem güvenli mi?", "Wifi güvenliği nedir?", "Telefonum çalındı", "Karekod güvenli mi?"].forEach(q => {
+      const chip = document.createElement("button");
+      chip.className = "chip";
+      chip.textContent = q;
+      chip.addEventListener("click", () => sendChat(q));
+      chatSuggestions.appendChild(chip);
+    });
+    chatSend.addEventListener("click", () => sendChat(chatInput.value));
+    chatInput.addEventListener("keydown", (e) => { if(e.key === "Enter") sendChat(chatInput.value); });
+  }
+
   /* ======================= SERVICE WORKER ======================= */
   if("serviceWorker" in navigator){
     window.addEventListener("load", () => {
@@ -776,3 +941,4 @@
   }
 
 })();
+
