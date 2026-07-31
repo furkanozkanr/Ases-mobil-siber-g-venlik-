@@ -1,21 +1,15 @@
-Copyright (c) 2026 Furkan Özkan. Tüm Hakları Saklıdır. (All Rights Reserved.)
-
-"KIZILKAYA" (Mobil Siber Güvenlik Uygulaması) projesine ve bu depoda (repository) yer alan tüm kaynak kodlarına, yazılımlara, algoritmalara, tasarımlara, arayüzlere, grafiklere, logolara, dokümantasyona ve fikri mülkiyet ürünlerine ait tüm haklar münhasıran ve tamamen Furkan Özkan’a aittir.
-
+Telif Hakkı (c) 2026 Furkan Özkan. Tüm Hakları Saklıdır. (Her hakkı saklıdır.)
+"ASES" (Mobil Siber Güvenlik Uygulaması) projesine ve bu depoda (repository) yer alan tüm kaynak kodlarına, yazılımlara, tasarımlara, parçalara, logolara, dokümantasyona ve fikri mülkiyet ürünlerine ait tüm haklar münhasıran ve tamamen Furkan Özkan'a aittir.
 1. MÜLKİYET VE TELİF HAKKI
-İşbu depoda bulunan tüm dijital varlıklar ve eserler, ulusal ve uluslararası telif hakkı kanunları ile koruma altındadır. Eser üzerindeki tüm mali, manevi, fikri ve ticari hakların tek sahibi Furkan Özkan'dır.
-
+İşbu depoda bulunan tüm dijital varlıklar ve eserler, ulusal ve uluslararası telif kanunları ile koruma altındadır. Eser üzerindeki tüm mali, manevi, fikri ve ticari hakların tek sahibi Furkan Özkan'dır.
 2. KULLANIM VE DAĞITIM KISITLAMALARI
-Aksi, Furkan Özkan tarafından verilmiş açık ve yazılı bir sözleşme veya lisans izni bulunmadığı sürece, aşağıdaki işlemlerin yapılması KESİNLİKLE YASAKTIR:
-   a) Kaynak kodlarının, yazılım bileşenlerinin veya tasarım dosyalarının kısmen veya tamamen kopyalanması, çoğaltılması, başka bir sunucuya veya depoya aktarılması.
-   b) Eser üzerinde değişiklik yapılması, türev (türemiş) çalışmalar üretilmesi veya eserin kaynak alınarak benzer bir yazılım/uygulama geliştirilmesi.
-   c) Eserin ticari veya ticari olmayan herhangi bir amaçla satılması, kiraya verilmesi, bir hizmet olarak sunulması veya üçüncü şahıslara lisanslanması.
-   d) "KIZILKAYA" marka adının, logosunun ve kurumsal kimlik unsurlarının izinsiz olarak kullanılması, taklit edilmesi veya ticari amaçla ticari sirkülasyona sokulması.
-
+Aksi takdirde, Furkan Özkan tarafından verilmiş açık ve yazılı bir sözleşme veya lisans izni devam ettiği sürece, aşağıdaki işlemlerin yapılması KESİNLİKLE YASAKTIR:
+• a) Kaynak kodlarının, yazılım bileşenlerinin veya tasarımlarının kısmen veya tamamen kopyalanması, çoğaltılması, başka bir sunucuya veya depoya aktarılması.
+• b) Eser üzerinde değişiklik yapılması, türev (türemiş) çalışmaların veya eserin kaynağıyla benzer bir yazılım/uygulama geliştirilmesi.
+• c) Eserin ticari veya ticari olmayan herhangi bir amaçla satılması, kiraya verilmesi, bir hizmet olarak sunulması veya üçüncü kişilere lisanslanması.
+• d) "ASES" markasının adı, logosunun ve kurumsal kimlik unsurlarının izinsiz olarak kullanılması, taklit edilmesi veya ticari amaçlı ticari sirkülasyona sokulması.
 3. SON KULLANICI İZNİ
-Uygulamanın son kullanıcı olarak (sadece orijinal ve yetkili mecralardan indirilip bireysel amaçla) çalıştırılması ve kullanılması istisnası hariç olmak üzere, bu depodaki hiçbir materyal üzerinde hiç kimseye hiçbir sahiplik veya kullanım hakkı devredilmiş sayılmaz.
-
-4. SORUMLULUK REDDİ (DISCLAIMER)
-İşbu yazılım ve ilişkili dosyalar "OLDUĞU GİBİ" sağlanmış olup, satılabilirlik, belirli bir amaca uygunluk veya hak ihlali yapılmaması dahil ancak bunlarla sınırlı olmamak üzere, açık veya zımni hiçbir garanti verilmemektedir. Telif hakkı sahibi Furkan Özkan, eserin kullanımından doğabilecek doğrudan, dolaylı, arızi, özel veya netice kabilinden hiçbir maddi veya manevi zarardan sorumlu tutulamaz.
-
-Her türlü telif ihlali, iş birliği talebi ve lisans sorgulamaları için resmi iletişim kanalları üzerinden yasal süreç başlatma hakkı saklıdır.
+Uygulamanın son kullanıcı olarak (sadece orijinal ve yetkili mecralardan indirilip bireysel amaçla) çalıştırılması ve kullanılması istisnası hariç olmak üzere, bu depodaki hiçbir malzeme üzerinde hiç kimsenin hiçbir sahiplik veya kullanım hakkı devredilmiş sayılmaz.
+4. SORUMLULUK REDDİ
+İşbu yazılım ve ilişkili dosyalar "OLDUĞU GİBİ" sağlanmış olup, satılabilirlik, belirli bir amaca uygunluk dahil olmak üzere, açık veya zımni hiçbir garanti verilmemektedir. Telif hakkı sahibi Furkan Özkan, eserin kullanımından doğabilecek doğrudan, dolaylı, arızi, özel veya netice kabilinden hiçbir maddi veya manevi zarardan sorumlu tutulamaz.
+Her türlü telif hakkı, iş birliği talebi ve lisans sorgulamaları için resmi iletişim bağlantıları üzerinden süreç başlatma hakkı saklıdır.
