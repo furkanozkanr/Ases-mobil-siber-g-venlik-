@@ -1,6 +1,6 @@
 {
-  "name": "KIZILKAYA — Mobil Siber Güvenlik",
-  "short_name": "KIZILKAYA",
+  "name": "ASES — Mobil Siber Güvenlik",
+  "short_name": "ASES",
   "description": "Vatandaşlar için ücretsiz mobil siber güvenlik rehberi.",
   "start_url": "./index.html",
   "scope": "./",
