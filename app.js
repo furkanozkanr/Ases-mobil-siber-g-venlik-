@@ -225,7 +225,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             body: body,
             icon: "icon-192.png",
             badge: "badge-192.png",
-            tag: tag || "kizilkaya",
+            tag: tag || "ases",
             renotify: true
         };
         if (navigator.serviceWorker && navigator.serviceWorker.ready) {
@@ -277,7 +277,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
                         if (!("Notification" in window) || Notification.permission === "denied")
                             return [2 /*return*/];
                         if (Notification.permission === "granted") {
-                            showAppNotification("KIZILKAYA", "Bildirimler zaten açık. Seni güvende tutmaya devam ediyorum.", "info");
+                            showAppNotification("ASES", "Bildirimler zaten açık. Seni güvende tutmaya devam ediyorum.", "info");
                             return [2 /*return*/];
                         }
                         return [4 /*yield*/, Notification.requestPermission()];
@@ -285,7 +285,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
                         perm = _a.sent();
                         refreshNotifButton();
                         if (perm === "granted") {
-                            showAppNotification("KIZILKAYA", "Bildirimler açıldı. Tehlikeli bir durum tespit edersem sana haber vereceğim.", "welcome");
+                            showAppNotification("ASES", "Bildirimler açıldı. Tehlikeli bir durum tespit edersem sana haber vereceğim.", "welcome");
                         }
                         return [2 /*return*/];
                 }
@@ -297,11 +297,11 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         if (!("Notification" in window))
             return;
         var todayKey = new Date().toISOString().slice(0, 10);
-        var lastShown = localStorage.getItem("kizilkaya_daily_notif");
+        var lastShown = localStorage.getItem("ases_daily_notif");
         if (Notification.permission === "granted" && lastShown !== todayKey) {
             setTimeout(function () {
-                showAppNotification("Günün İpucu — KIZILKAYA", dailyTips[dayIndex], "daily-tip");
-                localStorage.setItem("kizilkaya_daily_notif", todayKey);
+                showAppNotification("Günün İpucu — ASES", dailyTips[dayIndex], "daily-tip");
+                localStorage.setItem("ases_daily_notif", todayKey);
             }, 4000);
         }
     })();
@@ -1040,7 +1040,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
                 return;
             var history = [];
             try {
-                history = JSON.parse(localStorage.getItem("kizilkaya_history") || "[]");
+                history = JSON.parse(localStorage.getItem("ases_history") || "[]");
             }
             catch (e) {
                 history = [];
@@ -1057,14 +1057,14 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         }
         function saveHistory(type, rawInput, score) {
             try {
-                var history_1 = JSON.parse(localStorage.getItem("kizilkaya_history") || "[]");
+                var history_1 = JSON.parse(localStorage.getItem("ases_history") || "[]");
                 history_1.unshift({
                     date: new Date().toLocaleString("tr-TR"),
                     type: type,
                     input: rawInput.substring(0, 80) + (rawInput.length > 80 ? "…" : ""),
                     score: score
                 });
-                localStorage.setItem("kizilkaya_history", JSON.stringify(history_1.slice(0, 30)));
+                localStorage.setItem("ases_history", JSON.stringify(history_1.slice(0, 30)));
                 renderHistory();
             }
             catch (e) { /* localStorage kullanılamıyor olabilir */ }
@@ -1072,7 +1072,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         if (clearHistoryBtn) {
             clearHistoryBtn.addEventListener("click", function () {
                 if (confirm("Tüm tarama geçmişi silinecek. Emin misin?")) {
-                    localStorage.removeItem("kizilkaya_history");
+                    localStorage.removeItem("ases_history");
                     renderHistory();
                 }
             });
@@ -1111,7 +1111,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         });
         renderHistory();
     })();
-    /* ======================= KIZILKAYA ASİSTAN (YEREL SOHBET MOTORU) =======================
+    /* ======================= ASES ASİSTAN (YEREL SOHBET MOTORU) =======================
        Not: Bu bir yapay zeka API'sine bağlanmaz. Tamamen cihazda çalışan, anahtar kelime
        eşleştirmeli yerel bir bilgi motorudur — hiçbir mesaj internete gönderilmez. Her konu
        için birden fazla cevap kalıbı tutulur ve sırayla döndürülür, böylece aynı soruya hep
@@ -1193,7 +1193,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             ] },
         { id: "kimlik", keywords: ["sen kimsin", "nesin", "yapay zeka mısın", "kimsin"],
             responses: [
-                "Ben Kızılkaya'nın yerel asistanıyım. Cihazında çalışırım ve hiçbir mesajını dışarıya göndermem."
+                "Ben ASES'in yerel asistanıyım. Cihazında çalışırım ve hiçbir mesajını dışarıya göndermem."
             ] }
     ];
     var fallbackResponses = [
@@ -1260,7 +1260,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         }, 500 + Math.random() * 400);
     }
     if (chatWindow) {
-        addChatMsg("Merhaba! Ben Kızılkaya Asistan. Şifreler, dolandırıcılık, Wi-Fi, karekod, virüsler veya aile güvenliği hakkında bana soru sorabilirsin.", "bot");
+        addChatMsg("Merhaba! Ben ASES Asistan. Şifreler, dolandırıcılık, Wi-Fi, karekod, virüsler veya aile güvenliği hakkında bana soru sorabilirsin.", "bot");
         ["Şifrem güvenli mi?", "Wifi güvenliği nedir?", "Telefonum çalındı", "Karekod güvenli mi?"].forEach(function (q) {
             var chip = document.createElement("button");
             chip.className = "chip";
