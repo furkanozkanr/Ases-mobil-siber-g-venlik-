@@ -215,6 +215,32 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         updateShield();
     });
     updateShield();
+    /* ======================= RENK TEMASI ======================= */
+    (function initTheme() {
+        var THEME_KEY = "ases_theme";
+        var swatchButtons = document.querySelectorAll(".theme-swatch");
+        if (!swatchButtons.length) return;
+        function applyTheme(theme) {
+            if (theme === "red") {
+                document.documentElement.removeAttribute("data-theme");
+            } else {
+                document.documentElement.setAttribute("data-theme", theme);
+            }
+            swatchButtons.forEach(function (btn) {
+                btn.classList.toggle("active", btn.dataset.theme === theme);
+            });
+        }
+        var saved = "red";
+        try { saved = localStorage.getItem(THEME_KEY) || "red"; } catch (e) {}
+        applyTheme(saved);
+        swatchButtons.forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                var theme = btn.dataset.theme;
+                applyTheme(theme);
+                try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+            });
+        });
+    })();
     /* ======================= BİLDİRİMLER (YEREL PUSH) ======================= */
     var notifBtn = document.getElementById("notifBtn");
     var notifDesc = document.getElementById("notifDesc");
