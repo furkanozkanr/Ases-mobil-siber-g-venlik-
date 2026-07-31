@@ -640,7 +640,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             score += 45;
             reasons.push("Latin harfleriyle karışık Kiril/Yunan karakterleri var — görsel taklit (homoglyph) riski.");
         }
-        if (text.includes("@") && !host.includes("@")) {
+        if (url.username || url.password) {
             score += 25;
             reasons.push("Bağlantıda '@' işareti var — gerçek adresi gizlemek için kullanılmış olabilir.");
         }
