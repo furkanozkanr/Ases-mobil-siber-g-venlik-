@@ -10,7 +10,7 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
-var CACHE_NAME = "ases-v2";
+var CACHE_NAME = "ases-v3";
 var ASSETS = [
     "./",
     "./index.html",
