@@ -18,6 +18,28 @@
   font-size: 16px;
 }
 
+/* ===== RENK TEMASI VARYANTLARI =====
+   Yalnızca marka vurgu rengi değişir (--red / --red-soft / --red-deep / --line);
+   koyu arka plan ve risk renkleri (yeşil/amber/kırmızı bulgu rozetleri) her temada sabit kalır. */
+:root[data-theme="blue"]{
+  --line: rgba(70,120,230,0.2);
+  --red: #3266e6;
+  --red-soft: #5b8bff;
+  --red-deep: #0e2f7a;
+}
+:root[data-theme="green"]{
+  --line: rgba(60,190,120,0.2);
+  --red: #1fa35a;
+  --red-soft: #3ddc84;
+  --red-deep: #0e5c33;
+}
+:root[data-theme="purple"]{
+  --line: rgba(160,80,230,0.2);
+  --red: #8b3ce6;
+  --red-soft: #a855f7;
+  --red-deep: #3d1266;
+}
+
 *{ box-sizing: border-box; }
 
 html,body{
@@ -215,6 +237,26 @@ button{ font-family: inherit; }
 }
 .notif-btn.on{ background: #3fa34d; background: var(--green); }
 .notif-btn.off{ background: #1d1412; background: var(--surface-2); color: #a39b95; color: var(--gray); }
+
+/* ===== RENK TEMASI KARTI ===== */
+.theme-card{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  background: #150f0e; background: var(--surface); border:1px solid rgba(230,70,60,0.18); border:1px solid var(--line);
+  border-radius: 10px; border-radius: var(--radius-sm);
+  padding:14px 16px; margin-top:12px;
+}
+.theme-title{ font-family:'Oswald',sans-serif; font-weight:600; font-size:0.86rem; }
+.theme-swatches{ display:flex; gap:10px; }
+.theme-swatch{
+  width:30px; height:30px; border-radius:50%; border:2px solid transparent;
+  background:none; padding:2px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+.theme-swatch.active{ border-color: #f5f3f0; border-color: var(--white); }
+.swatch-dot{ width:100%; height:100%; border-radius:50%; display:block; }
+.swatch-red{ background: #e63232; }
+.swatch-blue{ background: #3266e6; }
+.swatch-green{ background: #1fa35a; }
+.swatch-purple{ background: #8b3ce6; }
 
 /* ===== MODULE GRID ===== */
 .module-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
