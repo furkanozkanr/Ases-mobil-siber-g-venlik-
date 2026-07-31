@@ -151,6 +151,7 @@ button{ font-family: inherit; }
   letter-spacing:0.12em; text-transform:uppercase; color: #ff5b52; color: var(--red-soft);
   margin: 28px 0 12px;
 }
+.section-label--tight{ margin-bottom:0; }
 
 /* ===== TIP CARD (home) ===== */
 .tip-card{
@@ -290,6 +291,7 @@ button{ font-family: inherit; }
 }
 .trust-banner.amber{ background: rgba(217,154,43,0.1); border-color: rgba(217,154,43,0.35); color:#f0dcb0; margin-top:20px; margin-bottom:0;}
 .trust-icon{ font-size:1rem; }
+.trust-icon svg{ width:16px; height:16px; display:inline-block; vertical-align:-3px; }
 
 /* ===== PASSWORD VIEW ===== */
 .field-label{ display:block; font-size:0.78rem; color: #a39b95; color: var(--gray); margin-bottom:8px; }
@@ -414,6 +416,7 @@ button{ font-family: inherit; }
 .qr-open-btn:active{ transform: scale(0.98); }
 .qr-open-btn:hover{ box-shadow: 0 8px 22px -8px rgba(230,50,50,0.6); }
 .qr-open-icon{ font-size:1.1rem; }
+.qr-open-icon svg{ width:18px; height:18px; display:inline-block; vertical-align:-4px; }
 
 .qr-manual{ margin-bottom:20px; }
 .qr-manual-row{ display:flex; gap:8px; }
@@ -532,4 +535,3 @@ button{ font-family: inherit; }
 @media (min-width:420px){
   .threat-grid{ grid-template-columns:1fr 1fr; }
 }
-
