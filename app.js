@@ -756,6 +756,13 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         score = Math.min(score, 100);
         return { score: score, reasons: __spreadArray([], __read(new Set(reasons)), false) };
     }
+    // GÜVENLİK: Karekod/link/SMS içeriğinden çıkarılan metinler (SSID, telefon numarası,
+    // e-posta adresi vb.) tamamen kullanıcı/saldırgan kontrolündedir. Bunlar daha sonra
+    // innerHTML ile ekrana yazılırken HTML olarak yorumlanmasını önlemek için kaçışlanır.
+    function escapeHtmlShared(str) {
+        return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
     // Karekod içeriğinin türünü tanır (yalnızca link değil — Wi-Fi, telefon, SMS,
     // e-posta, kripto adresi, kartvizit ve düz metin dahil HER TÜR kamera taraması).
     function analyzeQrPayload(raw) {
@@ -878,7 +885,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
                 var div = document.createElement("div");
                 var t = r.score >= 55 ? "bad" : r.score >= 25 ? "warn" : "ok";
                 div.className = "finding ".concat(t);
-                div.innerHTML = "<span>".concat(t === "ok" ? "✓" : t === "warn" ? "!" : "✕", "</span><span>").concat(reason, "</span>");
+                div.innerHTML = "<span>".concat(t === "ok" ? "✓" : t === "warn" ? "!" : "✕", "</span><span>").concat(escapeHtmlShared(reason), "</span>");
                 qrFindings.appendChild(div);
             });
             qrResult.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -1100,7 +1107,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
                     var div = document.createElement("div");
                     var t = r.score >= 55 ? "bad" : r.score >= 25 ? "warn" : "ok";
                     div.className = "finding ".concat(t);
-                    div.innerHTML = "<span>".concat(t === "ok" ? "✓" : t === "warn" ? "!" : "✕", "</span><span>").concat(reason, "</span>");
+                    div.innerHTML = "<span>".concat(t === "ok" ? "✓" : t === "warn" ? "!" : "✕", "</span><span>").concat(escapeHtmlShared(reason), "</span>");
                     scanFindings.appendChild(div);
                 });
                 saveHistory(scanMode, raw, r.score);
