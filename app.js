@@ -221,7 +221,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         var swatchButtons = document.querySelectorAll(".theme-swatch");
         if (!swatchButtons.length) return;
         function applyTheme(theme) {
-            if (theme === "red") {
+            if (theme === "silver") {
                 document.documentElement.removeAttribute("data-theme");
             } else {
                 document.documentElement.setAttribute("data-theme", theme);
@@ -230,8 +230,8 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
                 btn.classList.toggle("active", btn.dataset.theme === theme);
             });
         }
-        var saved = "red";
-        try { saved = localStorage.getItem(THEME_KEY) || "red"; } catch (e) {}
+        var saved = "silver";
+        try { saved = localStorage.getItem(THEME_KEY) || "silver"; } catch (e) {}
         applyTheme(saved);
         swatchButtons.forEach(function (btn) {
             btn.addEventListener("click", function () {
