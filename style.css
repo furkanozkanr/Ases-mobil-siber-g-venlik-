@@ -607,3 +607,4 @@ button{ font-family: inherit; }
 @media (min-width:420px){
   .threat-grid{ grid-template-columns:1fr 1fr; }
 }
+
