@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ASES — Mobil Siber Güvenlik</title>
 <meta name="theme-color" content="#0a0908">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'self'; upgrade-insecure-requests;">
+<!-- NOT: <meta> etiketiyle verilen CSP'de frame-ancestors tarayıcılar tarafından yok sayılır (spesifikasyon gereği).
+     Clickjacking korumasının gerçekten çalışması için bunu bir HTTP başlığı olarak da göndermek gerekir:
+     repo köküne eklenen _headers (Netlify) veya vercel.json dosyalarına bakınız. -->
 <meta name="description" content="Vatandaşlar için ücretsiz mobil siber güvenlik rehberi: şifre sağlığı, farkındalık ipuçları, acil durum rehberi ve aile güvenliği.">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-32.png">
@@ -512,8 +515,15 @@
 
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js" crossorigin="anonymous" defer></script>
+<!-- ÖNEMLİ: integrity="sha384-..." hash'ini buraya eklemeden yayınlamayın.
+     cdnjs.com/libraries/jsQR/1.4.0 sayfasındaki "Copy Script Tag" butonu doğru hash ile
+     script etiketini otomatik üretir — bu, uygulamanın tek dış bağımlılığını CDN taraflı
+     bir müdahaleye (tedarik zinciri saldırısı) karşı kilitler. Elle uydurulmuş/yanlış bir
+     hash tarayıcının scripti tamamen reddetmesine yol açar, bu yüzden hash'i mutlaka
+     cdnjs'in kendi sayfasından kopyalayın. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js" integrity="sha384-REPLACE_WITH_HASH_FROM_CDNJS" crossorigin="anonymous" defer></script>
 <script src="app.js"></script>
 </body>
 </html>
+
 
