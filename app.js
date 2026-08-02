@@ -215,6 +215,65 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         updateShield();
     });
     updateShield();
+    /* ======================= UYGULAMAYI YÜKLE (A2HS) ======================= */
+    (function initInstallPrompt() {
+        var banner = document.getElementById("installBanner");
+        var installBtn = document.getElementById("installBtn");
+        var closeBtn = document.getElementById("installClose");
+        if (!banner) return;
+
+        var DISMISS_KEY = "ases_install_dismissed";
+        var deferredPrompt = null;
+
+        function isStandalone() {
+            var mq = window.matchMedia && window.matchMedia("(display-mode: standalone)");
+            return (mq && mq.matches) || window.navigator.standalone === true;
+        }
+
+        function wasDismissedRecently() {
+            try {
+                var ts = localStorage.getItem(DISMISS_KEY);
+                if (!ts) return false;
+                var days = (Date.now() - parseInt(ts, 10)) / 86400000;
+                return days < 14;
+            } catch (e) { return false; }
+        }
+
+        if (isStandalone() || wasDismissedRecently()) return;
+
+        var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+        if (isIOS) {
+            installBtn.style.display = "none";
+            document.getElementById("installBanner").querySelector(".install-desc").textContent =
+                "Paylaş düğmesine dokunup \"Ana Ekrana Ekle\"yi seçerek yükleyebilirsin.";
+            banner.classList.remove("hidden");
+        }
+
+        window.addEventListener("beforeinstallprompt", function (e) {
+            e.preventDefault();
+            deferredPrompt = e;
+            banner.classList.remove("hidden");
+        });
+
+        window.addEventListener("appinstalled", function () {
+            banner.classList.add("hidden");
+            deferredPrompt = null;
+        });
+
+        installBtn.addEventListener("click", function () {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(function () {
+                deferredPrompt = null;
+                banner.classList.add("hidden");
+            });
+        });
+
+        closeBtn.addEventListener("click", function () {
+            banner.classList.add("hidden");
+            try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch (e) {}
+        });
+    })();
     /* ======================= RENK TEMASI ======================= */
     (function initTheme() {
         var THEME_KEY = "ases_theme";
