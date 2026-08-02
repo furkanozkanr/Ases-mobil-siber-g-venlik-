@@ -1,6 +1,9 @@
 /* ======================= ESKİ CİHAZ POLYFILL'LERİ (2015+ Android/WebView desteği) ======================= */
 (function(){
   "use strict";
+  // iOS Safari, sayfada hiç touchstart dinleyicisi yoksa :active (basınç) durumunu hiç tetiklemez.
+  // Bu satır, tuşlara basınca CSS'teki ışıklandırma efektinin iPhone'da da çalışmasını sağlar.
+  document.addEventListener("touchstart", function(){}, { passive: true });
   // NodeList.forEach (Chrome 51 öncesi WebView'lerde yok)
   if (window.NodeList && !NodeList.prototype.forEach) {
     NodeList.prototype.forEach = Array.prototype.forEach;
@@ -163,15 +166,6 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         window.scrollTo(0, 0);
     }
     navButtons.forEach(function (b) { return b.addEventListener("click", function () { return goto(b.dataset.goto); }); });
-
-    // Ana ekran kısayollarından (manifest "shortcuts") gelen #hash ile doğrudan ilgili sekmeyi aç
-    (function openFromShortcut() {
-        var hash = (location.hash || "").replace("#", "");
-        var validTargets = ["home", "password", "tips", "emergency", "family", "qr", "scan", "threats", "assistant"];
-        if (hash && validTargets.indexOf(hash) !== -1) {
-            goto(hash);
-        }
-    })();
     /* ======================= GÜNÜN İPUCU ======================= */
     var dailyTips = [
         "Bir bağlantıya tıklamadan önce fare imlecini (veya uzun basarak) üzerine getir, gerçek adresi kontrol et. Kısaltılmış linkler çoğu zaman gizli bir tuzak taşır.",
@@ -1380,4 +1374,5 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         });
     }
 })();
+
 
