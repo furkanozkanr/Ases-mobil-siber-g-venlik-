@@ -61,7 +61,21 @@ html,body{
   -webkit-font-smoothing: antialiased;
 }
 
-button{ font-family: inherit; }
+button{ font-family: inherit; -webkit-tap-highlight-color: transparent; }
+
+/* ===== TUŞ BASINÇ IŞIKLANDIRMASI =====
+   Her düğmeye basılınca tema vurgu rengiyle (--accent-rgb) kısa bir "ışık" efekti verir.
+   :active (parmak/mouse basılı tutulduğu an) + :focus-visible (klavye ile seçildiğinde) ikisinde de çalışır. */
+button:active,
+button:focus-visible{
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.35), 0 0 22px 2px rgba(var(--accent-rgb), 0.55);
+  outline: none;
+}
+button{ transition: box-shadow 0.15s ease, transform 0.12s ease; }
+
+@media (prefers-reduced-motion: reduce){
+  button:active, button:focus-visible{ box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.5); }
+}
 
 @media (prefers-reduced-motion: reduce){
   *{ animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
