@@ -14,5 +14,35 @@
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Şifre Sağlığı",
+      "short_name": "Şifre",
+      "description": "Şifreni cihazında test et",
+      "url": "./index.html#password",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Karekod Tarama",
+      "short_name": "Karekod",
+      "description": "Kamerayla karekod tara",
+      "url": "./index.html#qr",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Acil Durum Rehberi",
+      "short_name": "Acil Durum",
+      "description": "Başına bir şey geldiyse ne yapman gerektiğini gör",
+      "url": "./index.html#emergency",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "ASES Asistan",
+      "short_name": "Asistan",
+      "description": "Aklına takılanı sor",
+      "url": "./index.html#assistant",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
   ]
 }
