@@ -1,9 +1,8 @@
 "use strict";
 // Dosyalarda değişiklik yaptığında bu sürüm adını artır; eski önbellek otomatik temizlenir.
-var CACHE_NAME = "ases-v10";
+var CACHE_NAME = "ases-v11";
 var ASSETS = [
     "./",
-    "./index.html",
     "./style.css",
     "./app.js",
     "./manifest.json",
@@ -14,10 +13,21 @@ var ASSETS = [
     "./badge-192.png",
     "./signature-ataturk.png"
 ];
+// Yönlendirilmiş (redirected) bir yanıt sayfa gezinmesine verilirse Chrome ERR_FAILED hatası verir.
+// Bu yüzden böyle yanıtları "temiz" bir kopyaya çeviriyoruz.
+function clean(res) {
+    if (!res || !res.redirected)
+        return Promise.resolve(res);
+    return res.blob().then(function (b) {
+        return new Response(b, { status: res.status, statusText: res.statusText, headers: res.headers });
+    });
+}
 self.addEventListener("install", function (event) {
     // Tek bir dosya bile indirilemezse addAll tümünü iptal eder; her dosyayı ayrı ayrı önbelleğe alıyoruz.
     event.waitUntil(caches.open(CACHE_NAME).then(function (cache) {
-        return Promise.all(ASSETS.map(function (url) { return cache.add(url).catch(function () { }); }));
+        return Promise.all(ASSETS.map(function (url) {
+            return fetch(url).then(clean).then(function (res) { if (res && res.ok) return cache.put(url, res); }).catch(function () { });
+        }));
     }));
     self.skipWaiting();
 });
@@ -37,20 +47,19 @@ self.addEventListener("fetch", function (event) {
     var isJsQr = url.hostname === "cdnjs.cloudflare.com" && url.pathname.indexOf("jsQR") !== -1;
     if (!sameOrigin && !isJsQr)
         return;
-    event.respondWith(caches.match(req, { ignoreSearch: true }).then(function (cached) {
+    // Sayfa gezinmeleri (/ veya /index.html) her zaman önbellekteki ana sayfaya eşlenir
+    var key = req.mode === "navigate" ? "./" : req;
+    event.respondWith(caches.match(key, { ignoreSearch: true }).then(function (cached) {
         var network = fetch(req).then(function (res) {
+            if (res && res.type === "opaqueredirect")
+                return res;
             if (res && res.status === 200) {
                 var clone = res.clone();
-                caches.open(CACHE_NAME).then(function (cache) { return cache.put(req, clone); });
+                clean(clone).then(function (c) { return caches.open(CACHE_NAME).then(function (cache) { return cache.put(key, c); }); });
             }
-            return res;
-        }).catch(function () {
-            // Çevrimdışıyken sayfa gezinmeleri için ana sayfayı döndür
-            if (req.mode === "navigate")
-                return caches.match("./index.html").then(function (r) { return r || caches.match("./"); });
-            return cached;
-        });
-        return cached || network;
+            return clean(res);
+        }).catch(function () { return cached; });
+        return cached ? clean(cached) : network;
     }));
 });
 self.addEventListener("notificationclick", function (event) {
@@ -61,6 +70,6 @@ self.addEventListener("notificationclick", function (event) {
                 return clientList[i].focus();
         }
         if (self.clients.openWindow)
-            return self.clients.openWindow("./index.html");
+            return self.clients.openWindow("./");
     }));
 });
