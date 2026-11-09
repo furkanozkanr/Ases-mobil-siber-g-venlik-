@@ -30,6 +30,14 @@
       return out;
     };
   }
+  // Object.values (Chrome 54 öncesi)
+  if (!Object.values) {
+    Object.values = function(obj){
+      var out = [];
+      for(var key in obj){ if(Object.prototype.hasOwnProperty.call(obj, key)) out.push(obj[key]); }
+      return out;
+    };
+  }
   // Array.from (Chrome 45 öncesi)
   if (!Array.from) {
     Array.from = function(arrLike, mapFn){
@@ -150,10 +158,10 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     var views = document.querySelectorAll("[data-view]");
     var navButtons = document.querySelectorAll("[data-goto]");
     function goto(name) {
+        if (!document.getElementById("view-" + name)) name = "home";
         views.forEach(function (v) { return v.hidden = v.id !== "view-".concat(name); });
         document.querySelectorAll(".nav-btn").forEach(function (b) {
             var active = b.dataset.goto === name;
-            b.toggleAttribute("aria-current", active);
             if (active)
                 b.setAttribute("aria-current", "page");
             else
@@ -165,7 +173,19 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         }
         window.scrollTo(0, 0);
     }
-    navButtons.forEach(function (b) { return b.addEventListener("click", function () { return goto(b.dataset.goto); }); });
+    navButtons.forEach(function (b) { return b.addEventListener("click", function () {
+        goto(b.dataset.goto);
+        try { history.replaceState(null, "", "#" + b.dataset.goto); } catch (e) { }
+        // Alt menüde seçili sekmeyi görünür alana kaydır
+        if (b.classList.contains("nav-btn") && b.scrollIntoView) { try { b.scrollIntoView({ block: "nearest", inline: "center" }); } catch (e) { } }
+    }); });
+    // Manifest kısayolları (#password, #qr, #emergency, #assistant) ve doğrudan bağlantılar
+    function routeFromHash() {
+        var name = (location.hash || "").replace("#", "");
+        if (name) goto(name); else goto("home");
+    }
+    window.addEventListener("hashchange", routeFromHash);
+    if (location.hash) routeFromHash();
     /* ======================= GÜNÜN İPUCU ======================= */
     var dailyTips = [
         "Bir bağlantıya tıklamadan önce fare imlecini (veya uzun basarak) üzerine getir, gerçek adresi kontrol et. Kısaltılmış linkler çoğu zaman gizli bir tuzak taşır.",
@@ -203,7 +223,8 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         document.getElementById("shieldScore").textContent = "".concat(total, "/5");
         var fill = document.getElementById("shieldFill");
         var pct = total / checks.length;
-        fill.setAttribute("transform", "translate(0, ".concat(-(116 * pct), ")"));
+        // clip-path sabit kalsın diye transform yerine y konumunu değiştiriyoruz
+        fill.setAttribute("y", String(116 - 116 * pct));
         fill.style.fill = pct >= 0.8 ? "var(--green)" : pct >= 0.4 ? "var(--amber)" : "var(--red)";
     }
     checkListEl.addEventListener("click", function (e) {
@@ -316,13 +337,18 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             tag: tag || "ases",
             renotify: true
         };
-        if (navigator.serviceWorker && navigator.serviceWorker.ready) {
-            navigator.serviceWorker.ready.then(function (reg) { return reg.showNotification(title, opts); }).catch(function () {
-                try {
-                    new Notification(title, opts);
-                }
-                catch (e) { }
-            });
+        function fallback() {
+            try {
+                new Notification(title, opts);
+            }
+            catch (e) { }
+        }
+        if (navigator.serviceWorker && navigator.serviceWorker.getRegistration) {
+            // .ready, SW hiç kayıtlı değilse sonsuza kadar bekler; önce kayıt var mı bakıyoruz
+            navigator.serviceWorker.getRegistration().then(function (reg) {
+                if (reg && reg.showNotification) return reg.showNotification(title, opts);
+                fallback();
+            }).catch(fallback);
         }
         else {
             try {
@@ -385,11 +411,12 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         if (!("Notification" in window))
             return;
         var todayKey = new Date().toISOString().slice(0, 10);
-        var lastShown = localStorage.getItem("ases_daily_notif");
+        var lastShown = null;
+        try { lastShown = localStorage.getItem("ases_daily_notif"); } catch (e) { }
         if (Notification.permission === "granted" && lastShown !== todayKey) {
             setTimeout(function () {
                 showAppNotification("Günün İpucu — ASES", dailyTips[dayIndex], "daily-tip");
-                localStorage.setItem("ases_daily_notif", todayKey);
+                try { localStorage.setItem("ases_daily_notif", todayKey); } catch (e) { }
             }, 4000);
         }
     })();
@@ -455,7 +482,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         else {
             findings.push({ t: "bad", m: "Sadece ".concat(pw.length, " karakter \u2014 en az 8, tercihen 12+ karakter kullan.") });
         }
-        var hasLower = /[a-zçğıöşü]/i.test(pw) && /[a-z]/.test(pw);
+        var hasLower = /[a-zçğıöşü]/.test(pw);
         var hasUpper = /[A-ZÇĞİÖŞÜ]/.test(pw);
         var hasDigit = /[0-9]/.test(pw);
         var hasSymbol = /[^a-zA-Z0-9çğıöşüÇĞİÖŞÜ]/.test(pw);
@@ -655,6 +682,20 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         "unlock", "activate", "billing", "payment", "wallet", "webscr", "wp-login", "admin"
     ];
     var MALICIOUS_EXTENSIONS = ["apk", "exe", "scr", "bat", "cmd", "msi", "jar", "vbs", "ps1"];
+    // Türkçe karakterleri ASCII'ye indirger ve küçük harfe çevirir: "HESABINIZ" == "hesabiniz" == "hesabınız"
+    function fold(s) {
+        var t = String(s);
+        try { t = t.toLocaleLowerCase("tr"); } catch (e) { t = t.toLowerCase(); }
+        return t.replace(/ı/g, "i").replace(/i̇/g, "i").replace(/ğ/g, "g").replace(/ü/g, "u")
+                .replace(/ş/g, "s").replace(/ö/g, "o").replace(/ç/g, "c");
+    }
+    // "ups" gibi kısa marka adları "groups.google.com" içinde yanlışlıkla eşleşmesin diye
+    // marka, alan adının bir etiketi (nokta/tire ile ayrılmış parça) olarak aranır.
+    function hostHasBrand(host, brand) {
+        var tokens = host.split(/[.\-_]/);
+        if (tokens.indexOf(brand) !== -1) return true;
+        return brand.length >= 5 && host.indexOf(brand) !== -1;
+    }
     function levenshtein(a, b) {
         a = a.toLowerCase();
         b = b.toLowerCase();
@@ -760,7 +801,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         try {
             for (var _c = __values(Object.entries(BRANDS)), _d = _c.next(); !_d.done; _d = _c.next()) {
                 var _e = __read(_d.value, 2), brand = _e[0], official = _e[1];
-                if (host.includes(brand)) {
+                if (hostHasBrand(host, brand)) {
                     if (!isOfficialDomain(host, official) && !isShortener) {
                         score += 40;
                         reasons.push("G\u00FCvenilir kurum ad\u0131 (\"".concat(brand, "\") resmi olmayan bir adreste ge\u00E7iyor \u2014 sahte site riski y\u00FCksek."));
@@ -822,10 +863,10 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     function analyzeTextContent(raw) {
         var score = 0, reasons = [];
         var clean = raw.replace(/[\u200B-\u200F\u2060\uFEFF\u202A-\u202E\u2066-\u2069]/g, "");
-        var lower = clean.toLowerCase();
+        var lower = fold(clean);
         var hits = 0;
         SCAM_PHRASES.forEach(function (p) {
-            if (lower.includes(p)) {
+            if (lower.includes(fold(p))) {
                 hits++;
                 score += hits === 1 ? 22 : hits === 2 ? 16 : 10;
                 reasons.push("Doland\u0131r\u0131c\u0131l\u0131k kal\u0131b\u0131: \"".concat(p, "\""));
@@ -837,7 +878,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             score += Math.round(inner.score * 0.5);
             inner.reasons.slice(0, 2).forEach(function (r) { return reasons.push("(Bağlantı) " + r); });
         }
-        if (/(şifre|parola|otp|doğrulama kodu|cvv|cvc|kart no|iban|tc kimlik)/i.test(clean)) {
+        if (/(sifre|parola|otp|dogrulama kodu|cvv|cvc|kart no|iban|tc kimlik)/.test(lower)) {
             score += 18;
             reasons.push("Mesaj doğrudan şifre, OTP, kart veya kimlik bilgisi talep ediyor gibi görünüyor.");
         }
@@ -888,7 +929,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             try {
                 for (var _b = __values(Object.entries(BRANDS)), _c = _b.next(); !_c.done; _c = _b.next()) {
                     var _d = __read(_c.value, 2), brand = _d[0], official = _d[1];
-                    if (domain_1.includes(brand) && !isOfficialDomain(domain_1, official)) {
+                    if (hostHasBrand(domain_1, brand) && !isOfficialDomain(domain_1, official)) {
                         score += 35;
                         reasons.push("E-posta alan ad\u0131 \"".concat(domain_1, "\", \"").concat(brand, "\" markas\u0131n\u0131 taklit ediyor olabilir."));
                     }
@@ -950,7 +991,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         var qrManualBtn = document.getElementById("qrManualBtn");
         var stream = null, rafId = null, stopped = true;
         var canvas = document.createElement("canvas");
-        var ctx = canvas.getContext("2d", { willReadFrequently: true });
+        var ctx = canvas.getContext("2d", { willReadFrequently: true }) || canvas.getContext("2d");
         var detector = null;
         if ("BarcodeDetector" in window) {
             try {
@@ -1015,6 +1056,11 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
                             return [4 /*yield*/, navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false })];
                         case 2:
                             stream = _a.sent();
+                            if (qrModal.classList.contains("hidden")) {
+                                // Kamera izni beklenirken kullanıcı pencereyi kapattıysa kamerayı açık bırakma
+                                stopCamera();
+                                return [2 /*return*/];
+                            }
                             qrVideo.srcObject = stream;
                             return [4 /*yield*/, qrVideo.play()];
                         case 3:
@@ -1051,7 +1097,11 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
                             _a.trys.push([1, 5, , 6]);
                             code = null;
                             if (!detector) return [3 /*break*/, 3];
-                            return [4 /*yield*/, detector.detect(qrVideo)];
+                            return [4 /*yield*/, detector.detect(qrVideo).catch(function () {
+                                // BarcodeDetector çalışmıyorsa jsQR'a geç
+                                detector = null;
+                                return [];
+                            })];
                         case 2:
                             results = _a.sent();
                             if (results && results.length)
@@ -1059,8 +1109,10 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
                             return [3 /*break*/, 4];
                         case 3:
                             if (typeof jsQR === "function") {
-                                canvas.width = qrVideo.videoWidth;
-                                canvas.height = qrVideo.videoHeight;
+                                // Büyük kareleri küçülterek tara: telefonu dondurmadan hızlı çözümleme
+                                var scale = Math.min(1, 640 / qrVideo.videoWidth);
+                                canvas.width = Math.round(qrVideo.videoWidth * scale);
+                                canvas.height = Math.round(qrVideo.videoHeight * scale);
                                 ctx.drawImage(qrVideo, 0, 0, canvas.width, canvas.height);
                                 frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
                                 res = jsQR(frame.data, frame.width, frame.height, { inversionAttempts: "dontInvert" });
@@ -1167,7 +1219,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         if (clearHistoryBtn) {
             clearHistoryBtn.addEventListener("click", function () {
                 if (confirm("Tüm tarama geçmişi silinecek. Emin misin?")) {
-                    localStorage.removeItem("ases_history");
+                    try { localStorage.removeItem("ases_history"); } catch (e) { }
                     renderHistory();
                 }
             });
@@ -1298,8 +1350,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     ];
     var assistantState = { topicIndex: {}, fallbackIndex: 0 };
     function normalizeTr(str) {
-        return str
-            .toLocaleLowerCase("tr")
+        return fold(str)
             .replace(/[.,!?;:'"()]/g, " ")
             .replace(/\s+/g, " ")
             .trim();

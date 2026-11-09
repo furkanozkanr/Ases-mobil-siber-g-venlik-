@@ -39,7 +39,7 @@ Bu proje statik dosyalardan oluşur, herhangi bir statik barındırma servisinde
 
 ## Lisans
 
-Bu proje özel mülkiyetlidir — tüm hakları saklıdır. Ayrıntılar için [`LICENSE.txt`](./LICENSE.txt) dosyasına bakınız.
+Bu proje özel mülkiyetlidir — tüm hakları saklıdır. Ayrıntılar için [`License.txt`](./License.txt) dosyasına bakınız.
 
 ## İletişim
 

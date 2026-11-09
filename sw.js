@@ -1,29 +1,24 @@
 "use strict";
-var __values = (this && this.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
-};
-var CACHE_NAME = "ases-v9";
+// Dosyalarda değişiklik yaptığında bu sürüm adını artır; eski önbellek otomatik temizlenir.
+var CACHE_NAME = "ases-v10";
 var ASSETS = [
     "./",
     "./index.html",
     "./style.css",
     "./app.js",
     "./manifest.json",
+    "./icon-32.png",
+    "./icon-180.png",
     "./icon-192.png",
     "./icon-512.png",
     "./badge-192.png",
     "./signature-ataturk.png"
 ];
 self.addEventListener("install", function (event) {
-    event.waitUntil(caches.open(CACHE_NAME).then(function (cache) { return cache.addAll(ASSETS); }).catch(function () { }));
+    // Tek bir dosya bile indirilemezse addAll tümünü iptal eder; her dosyayı ayrı ayrı önbelleğe alıyoruz.
+    event.waitUntil(caches.open(CACHE_NAME).then(function (cache) {
+        return Promise.all(ASSETS.map(function (url) { return cache.add(url).catch(function () { }); }));
+    }));
     self.skipWaiting();
 });
 self.addEventListener("activate", function (event) {
@@ -33,38 +28,37 @@ self.addEventListener("activate", function (event) {
     self.clients.claim();
 });
 self.addEventListener("fetch", function (event) {
-    if (event.request.method !== "GET")
+    var req = event.request;
+    if (req.method !== "GET")
         return;
-    event.respondWith(caches.match(event.request).then(function (cached) {
-        var network = fetch(event.request)
-            .then(function (res) {
+    var url = new URL(req.url);
+    // Yalnızca kendi dosyalarımızı ve jsQR kütüphanesini ele al; diğer her şey (Google Fonts vb.) tarayıcıya kalsın.
+    var sameOrigin = url.origin === self.location.origin;
+    var isJsQr = url.hostname === "cdnjs.cloudflare.com" && url.pathname.indexOf("jsQR") !== -1;
+    if (!sameOrigin && !isJsQr)
+        return;
+    event.respondWith(caches.match(req, { ignoreSearch: true }).then(function (cached) {
+        var network = fetch(req).then(function (res) {
             if (res && res.status === 200) {
-                var clone_1 = res.clone();
-                caches.open(CACHE_NAME).then(function (cache) { return cache.put(event.request, clone_1); });
+                var clone = res.clone();
+                caches.open(CACHE_NAME).then(function (cache) { return cache.put(req, clone); });
             }
             return res;
-        })
-            .catch(function () { return cached; });
+        }).catch(function () {
+            // Çevrimdışıyken sayfa gezinmeleri için ana sayfayı döndür
+            if (req.mode === "navigate")
+                return caches.match("./index.html").then(function (r) { return r || caches.match("./"); });
+            return cached;
+        });
         return cached || network;
     }));
 });
 self.addEventListener("notificationclick", function (event) {
     event.notification.close();
     event.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(function (clientList) {
-        var e_1, _a;
-        try {
-            for (var clientList_1 = __values(clientList), clientList_1_1 = clientList_1.next(); !clientList_1_1.done; clientList_1_1 = clientList_1.next()) {
-                var client = clientList_1_1.value;
-                if ("focus" in client)
-                    return client.focus();
-            }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (clientList_1_1 && !clientList_1_1.done && (_a = clientList_1.return)) _a.call(clientList_1);
-            }
-            finally { if (e_1) throw e_1.error; }
+        for (var i = 0; i < clientList.length; i++) {
+            if ("focus" in clientList[i])
+                return clientList[i].focus();
         }
         if (self.clients.openWindow)
             return self.clients.openWindow("./index.html");

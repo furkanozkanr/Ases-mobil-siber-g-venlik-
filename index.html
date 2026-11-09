@@ -1,16 +1,13 @@
 <!DOCTYPE html>
 <html lang="tr">
-<head> <script>  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-</script>
-<script defer src="https://vercel-scripts.com"></script>
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ASES — Mobil Siber Güvenlik</title>
 <meta name="theme-color" content="#0a0908">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'self'; upgrade-insecure-requests;">
-<!-- NOT: <meta> etiketiyle verilen CSP'de frame-ancestors tarayıcılar tarafından yok sayılır (spesifikasyon gereği).
-     Clickjacking korumasının gerçekten çalışması için bunu bir HTTP başlığı olarak da göndermek gerekir:
-     repo köküne eklenen _headers (Netlify) veya vercel.json dosyalarına bakınız. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests;">
+<!-- NOT: frame-ancestors yönergesi <meta> CSP'de çalışmaz; bu yüzden meta'dan çıkarıldı ve
+     HTTP başlığı olarak vercel.json (Vercel) ile _headers (Netlify) dosyalarında verilir. -->
 <meta name="description" content="Vatandaşlar için ücretsiz mobil siber güvenlik rehberi: şifre sağlığı, farkındalık ipuçları, acil durum rehberi ve aile güvenliği.">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-32.png">
@@ -517,12 +514,10 @@
 
 </div>
 
-<!-- ÖNEMLİ: integrity="sha384-..." hash'ini buraya eklemeden yayınlamayın.
-     cdnjs.com/libraries/jsQR/1.4.0 sayfasındaki "Copy Script Tag" butonu doğru hash ile
-     script etiketini otomatik üretir — bu, uygulamanın tek dış bağımlılığını CDN taraflı
-     bir müdahaleye (tedarik zinciri saldırısı) karşı kilitler. Elle uydurulmuş/yanlış bir
-     hash tarayıcının scripti tamamen reddetmesine yol açar, bu yüzden hash'i mutlaka
-     cdnjs'in kendi sayfasından kopyalayın. -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js" integrity="sha384-REPLACE_WITH_HASH_FROM_CDNJS" crossorigin="anonymous" defer></script>
+<!-- jsQR: BarcodeDetector desteklemeyen tarayıcılar (iOS Safari, Firefox) için yedek karekod çözücü.
+     NOT: integrity hash'i geçerli değilse tarayıcı scripti tamamen engeller. Doğru hash'i cdnjs.com/libraries/jsQR
+     sayfasındaki "Copy SRI" ile alıp integrity="sha512-..." olarak ekleyebilirsiniz. -->
+<script src="app.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js" crossorigin="anonymous" defer></script>
 </body>
 </html>
