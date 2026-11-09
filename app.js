@@ -187,21 +187,11 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     window.addEventListener("hashchange", routeFromHash);
     if (location.hash) routeFromHash();
     /* ======================= GÜNÜN İPUCU ======================= */
-    var dailyTips = [
-        "Bir bağlantıya tıklamadan önce fare imlecini (veya uzun basarak) üzerine getir, gerçek adresi kontrol et. Kısaltılmış linkler çoğu zaman gizli bir tuzak taşır.",
-        "Bankanız asla SMS veya telefonla şifre, OTP kodu ya da kart bilgisi istemez. Böyle bir talep geldiğinde hemen kapat ve bankanı resmi hattından ara.",
-        "Kargo takip linki gönderdiğini iddia eden mesajlarda dikkatli ol; gerçek kargo firmaları takip numarasını genelde uygulama üzerinden gösterir.",
-        "'Hesabın askıya alındı' gibi aciliyet hissi yaratan mesajlar en klasik dolandırıcılık taktiğidir. Panik yerine doğrulama yap.",
-        "Wi-Fi şifreni paylaşırken misafir ağı (guest network) kullan, ana ağını yabancılara açma.",
-        "İki adımlı doğrulamayı (2FA) e-posta ve bankacılık hesaplarında mutlaka aç; şifren çalınsa bile hesabını korur.",
-        "Sosyal medyada konum paylaşımını gerçek zamanlı değil, oradan ayrıldıktan sonra yap.",
-        "Halka açık Wi-Fi'de bankacılık işlemi yapmaktan kaçın, mümkünse mobil veri kullan.",
-        "Tanımadığın numaralardan gelen WhatsApp görüntülü aramalara temkinli yaklaş, bazı dolandırıcılık senaryoları burada başlar.",
-        "Uygulama indirirken yalnızca resmi mağazaları (Play Store, App Store) kullan, APK dosyalarını dışarıdan indirmekten kaçın.",
-        "Telefon numaranı ve e-postanı hangi sitelerde kullandığını zaman zaman gözden geçir, kullanmadığın hesapları kapat.",
-        "Sahte 'ödül kazandın' mesajlarına asla kişisel bilgi veya ödeme bilgisi girme."
+    // İpuçları tips.js dosyasında (service worker ile ortak)
+    var dailyTips = (typeof ASES_TIPS !== "undefined" && ASES_TIPS.length) ? ASES_TIPS : [
+        "Bilmediğin bağlantılara tıklamadan önce adresi kontrol et."
     ];
-    var dayIndex = Math.floor(Date.now() / 86400000) % dailyTips.length;
+    var dayIndex = (typeof asesTipIndex === "function") ? asesTipIndex() : 0;
     document.getElementById("dailyTipText").textContent = dailyTips[dayIndex];
     /* ======================= HIZLI GÜVENLİK KONTROLÜ ======================= */
     var checks = [
@@ -335,7 +325,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             icon: "icon-192.png",
             badge: "badge-192.png",
             tag: tag || "ases",
-            renotify: true
+            renotify: tag !== "daily-tip"
         };
         function fallback() {
             try {
@@ -356,6 +346,18 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             }
             catch (e) { }
         }
+    }
+    // Chrome (Android) yüklü PWA'larda günde bir kez arka planda ipucu bildirimi göndermeyi dener.
+    // Not: Tarayıcı bunu garanti etmez; çalışma zamanını Chrome belirler.
+    function registerDailyTipSync() {
+        try {
+            if (!("Notification" in window) || Notification.permission !== "granted") return;
+            if (!navigator.serviceWorker || !navigator.serviceWorker.ready) return;
+            navigator.serviceWorker.ready.then(function (reg) {
+                if (!reg.periodicSync || !reg.periodicSync.register) return;
+                return reg.periodicSync.register("ases-daily-tip", { minInterval: 24 * 60 * 60 * 1000 });
+            }).catch(function () { });
+        } catch (e) { }
     }
     function refreshNotifButton() {
         if (!("Notification" in window)) {
@@ -381,6 +383,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             notifDesc.textContent = "Tehlikeli bir karekod ya da zayıf şifre tespit edildiğinde, logolu bir bildirimle anında uyar.";
         }
     }
+    registerDailyTipSync();
     if (notifBtn) {
         refreshNotifButton();
         notifBtn.addEventListener("click", function () { return __awaiter(void 0, void 0, void 0, function () {
@@ -398,6 +401,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
                     case 1:
                         perm = _a.sent();
                         refreshNotifButton();
+                        registerDailyTipSync();
                         if (perm === "granted") {
                             showAppNotification("ASES", "Bildirimler açıldı. Tehlikeli bir durum tespit edersem sana haber vereceğim.", "welcome");
                         }
