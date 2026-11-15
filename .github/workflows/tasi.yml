@@ -1,0 +1,29 @@
+name: Dosyaları site klasörüne taşı
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  tasi:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Depoyu çek
+        uses: actions/checkout@v4
+
+      - name: Dosyaları taşı
+        run: |
+          mkdir -p site
+          for f in index.html app.js style.css sw.js tips.js manifest.json _headers vercel.json badge-192.png icon-32.png icon-180.png icon-192.png icon-512.png signature-ataturk.png; do
+            if [ -f "$f" ]; then git mv "$f" "site/$f"; fi
+          done
+          git rm -q --ignore-unmatch ./*.zip
+
+      - name: Kaydet
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Site dosyalarını site/ klasörüne taşı"
+          git push
