@@ -149,17 +149,24 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 (function () {
     "use strict";
     /* ======================= SPLASH INTRO (siber toz) ======================= */
-    // Toz bulutları birleşir -> açılır -> logo pikselleriyle (logo renginde) yeniden oluşur.
+    // Tek büyük toz bulutu girdap gibi döner -> çekirdekte yoğunlaşır -> patlayıp açılır ->
+    // logo pikselleriyle (logo renginde) yeniden oluşur -> tarama çizgisiyle net logo ortaya çıkar.
     var splash = document.getElementById("splash");
     if (splash) {
         var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         var splashLogo = document.getElementById("splashLogo");
         var dustCanvas = document.getElementById("splashDust");
+        var hudLine = document.getElementById("hudLine");
+        var hudBar = document.getElementById("hudBar");
         var splashDone = false;
         var closeSplash = function (wait) {
             if (splashDone) return;
             splashDone = true;
-            if (splashLogo) splashLogo.classList.add("show");
+            if (splashLogo) {
+                splashLogo.style.clipPath = "none";
+                splashLogo.style.transform = "";
+                splashLogo.classList.add("show");
+            }
             setTimeout(function () {
                 splash.classList.add("leaving");
                 setTimeout(function () { return splash.remove(); }, 550);
@@ -194,50 +201,91 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             for (var s = pts.length - 1; s > 0; s--) { // karıştır
                 var r = Math.floor(Math.random() * (s + 1)), t = pts[s]; pts[s] = pts[r]; pts[r] = t;
             }
-            var N = Math.min(pts.length, W < 500 ? 4800 : 7000);
-            var buckets = {}, P = [];
-            var Rs = Math.min(W, H) * 0.34;      // bulutların başlangıç yarıçapı
-            var cloudR = size * 0.34;            // bulut büyüklüğü
+            var N = Math.min(pts.length, W < 500 ? 5200 : 7500);
+            var Rc = size * 0.62;                       // tek bulutun yarıçapı
+            var TC = Math.cos(-0.35), TS = Math.sin(-0.35); // bulutun eğimi
+            var CHARS = "01010110ABCDEF<>/#{}";
+            var buckets = {}, G = [];
             for (var n = 0; n < N; n++) {
                 var q = pts[n];
-                var cr = Math.min(255, q[2] * 1.1 + 6), cg = Math.min(255, q[3] * 1.1 + 6), cb = Math.min(255, q[4] * 1.1 + 6);
-                var key = (cr >> 5) + "," + (cg >> 5) + "," + (cb >> 5);
-                if (!buckets[key]) buckets[key] = { color: "rgb(" + ((cr >> 5) * 32 + 16) + "," + ((cg >> 5) * 32 + 16) + "," + ((cb >> 5) * 32 + 16) + ")", list: [] };
-                var ang = Math.random() * Math.PI * 2, rad = Math.pow(Math.random(), 0.65) * cloudR;
+                var rad = Math.pow(Math.random(), 0.55) * Rc;
                 var bAng = Math.random() * Math.PI * 2, bRad = size * (0.55 + Math.random() * 0.95);
-                P.push({
+                var p = {
                     sx: Math.random() * W, sy: Math.random() * H,
-                    k: n % 3, ox: Math.cos(ang) * rad, oy: Math.sin(ang) * rad,
-                    w: (n % 2 ? 1 : -1) * (0.8 + Math.random() * 1.6),
+                    a0: Math.random() * Math.PI * 2, r: rad, tw: (rad / Rc) * 2.4,
+                    w: 0.8 / (0.3 + rad / Rc) * (0.8 + Math.random() * 0.4),   // içte hızlı, dışta yavaş
                     bx: cx + Math.cos(bAng) * bRad, by: cy + Math.sin(bAng) * bRad * 0.9,
                     tx: cx + (q[0] / S - 0.5) * size, ty: cy + (q[1] / S - 0.5) * size,
                     sz: 1.1 + Math.random() * 1.5, ph: Math.random() * 6.28,
-                    d: Math.random(), curve: (Math.random() - 0.5) * size * 0.7
-                });
-                buckets[key].list.push(P[P.length - 1]);
+                    d: Math.random(), curve: (Math.random() - 0.5) * size * 0.7,
+                    x: 0, y: 0, s: 1
+                };
+                if (Math.random() < 0.09) { G.push(p); continue; } // ~%9 "veri" karakteri
+                var cr = Math.min(255, q[2] * 1.1 + 6), cg = Math.min(255, q[3] * 1.1 + 6), cb = Math.min(255, q[4] * 1.1 + 6);
+                var key = (cr >> 5) + "," + (cg >> 5) + "," + (cb >> 5);
+                if (!buckets[key]) buckets[key] = { color: "rgb(" + ((cr >> 5) * 32 + 16) + "," + ((cg >> 5) * 32 + 16) + "," + ((cb >> 5) * 32 + 16) + ")", list: [] };
+                buckets[key].list.push(p);
             }
             var groups = Object.keys(buckets).map(function (k) { return buckets[k]; });
             // Zaman çizelgesi (sn)
-            var T_MERGE = 1.1, T_OPEN = 1.7, T_FORM = 2.3, T_LOGO = 3.3, T_FADE = 3.6, T_END = 4.3;
-            function cloudPos(p, t) {
-                var m = easeInOut(clamp01((t - 0.3) / (T_OPEN - 0.3)));      // bulutlar merkeze akar
-                var rc = Rs * (1 - m), th = p.k * 2.0944 - 1.57 + t * 1.2;
-                var tight = 1 - 0.68 * easeInOut(clamp01((t - T_MERGE) / (T_OPEN - T_MERGE)));
-                var a = t * p.w;
-                var c = Math.cos(a), s = Math.sin(a);
-                return [
-                    cx + Math.cos(th) * rc + (p.ox * c - p.oy * s) * tight + Math.sin(t * 3 + p.ph) * 5,
-                    cy + Math.sin(th) * rc + (p.ox * s + p.oy * c) * tight + Math.cos(t * 2.6 + p.ph) * 5
-                ];
+            var T_TIGHT = 1.4, T_OPEN = 2.3, T_FORM = 2.9, T_SCAN = 3.9, T_SCAN_D = 0.9, T_FADE = 4.6, T_END = 5.4;
+            var GLITCH = [[2.32, 2.4], [4.82, 4.9], [5.05, 5.1]];
+            function place(p, t) {
+                var x, y, sz = 1;
+                var tt = t < T_OPEN ? t : T_OPEN;
+                var sc = 1 - 0.78 * easeInOut(clamp01((tt - T_TIGHT) / 0.8));   // bulut çekirdeğe sıkışır
+                var rr = p.r * sc * (1 + 0.05 * Math.sin(tt * 3 + p.ph));
+                var a = p.a0 + p.tw * sc + tt * p.w;                              // girdap (spiral) dönüşü
+                var ex = Math.cos(a) * rr, ey = Math.sin(a) * rr * 0.78;
+                var bxp = cx + ex * TC - ey * TS + Math.sin(tt * 3 + p.ph) * 4;
+                var byp = cy + ex * TS + ey * TC + Math.cos(tt * 2.6 + p.ph) * 4;
+                if (t < T_OPEN) {
+                    var g1 = easeOut(clamp01((t - p.d * 0.4) / 1.3));
+                    x = p.sx + (bxp - p.sx) * g1; y = p.sy + (byp - p.sy) * g1;
+                    if (t > T_TIGHT + 0.6) { x += (Math.random() - 0.5) * 2.5; y += (Math.random() - 0.5) * 2.5; }
+                } else {
+                    var o = easeOutExpo(clamp01((t - T_OPEN - p.d * 0.12) / 0.6));
+                    x = bxp + (p.bx - bxp) * o; y = byp + (p.by - byp) * o;
+                    sz = 1 + 0.5 * (1 - o);
+                    if (t >= T_FORM) {
+                        var f = easeInOut(clamp01((t - T_FORM - p.d * 0.35) / 1.2));
+                        var dx = p.tx - p.bx, dy = p.ty - p.by, len = Math.sqrt(dx * dx + dy * dy) || 1;
+                        var sw = Math.sin(Math.PI * f) * p.curve;
+                        x = p.bx + dx * f - dy / len * sw; y = p.by + dy * f + dx / len * sw;
+                        sz *= 1 - 0.25 * f;
+                        var fl = (1 - f) * 3.5 + 0.35;
+                        x += Math.sin(t * 4 + p.ph) * fl; y += Math.cos(t * 3.4 + p.ph) * fl;
+                    } else {
+                        x += Math.sin(t * 2.4 + p.ph) * 4; y += Math.cos(t * 2 + p.ph) * 4;
+                    }
+                }
+                p.x = x; p.y = y; p.s = sz;
             }
-            var t0 = null, raf = 0;
+            var stageText = function (pr) {
+                return pr < 0.25 ? "SİSTEM BAŞLATILIYOR" : pr < 0.5 ? "VERİ PARÇACIKLARI TOPLANIYOR" :
+                    pr < 0.75 ? "KALKAN OLUŞTURULUYOR" : pr < 1 ? "ŞİFRELEME AKTİF" : "ASES HAZIR";
+            };
+            var t0 = null, lastPct = -1, scanStarted = false;
             function frame(now) {
                 if (splashDone) return;
                 if (t0 === null) t0 = now;
                 var t = (now - t0) / 1000;
                 ctx.clearRect(0, 0, W, H);
                 ctx.globalCompositeOperation = "lighter";
-                // açılma anında şok dalgası halkası
+                var fade = 1 - clamp01((t - T_FADE) / (T_END - T_FADE - 0.1));
+                // HUD yüzükleri (dönen kesikli çemberler)
+                var ra = clamp01((t - T_OPEN) / 0.5) * fade;
+                if (ra > 0) {
+                    ctx.globalAlpha = ra * 0.5;
+                    ctx.strokeStyle = "rgb(199,205,214)";
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([6, 9]);
+                    ctx.beginPath(); ctx.arc(cx, cy, size * 0.64, t * 0.6, t * 0.6 + 6.2832); ctx.stroke();
+                    ctx.setLineDash([2, 7]);
+                    ctx.beginPath(); ctx.arc(cx, cy, size * 0.72, -t * 0.9, -t * 0.9 + 6.2832); ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+                // açılma anında şok dalgası
                 var rp = clamp01((t - T_OPEN) / 0.7);
                 if (rp > 0 && rp < 1) {
                     ctx.globalAlpha = (1 - rp) * 0.55;
@@ -245,49 +293,69 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
                     ctx.lineWidth = 1.5;
                     ctx.beginPath(); ctx.arc(cx, cy, size * 0.2 + easeOut(rp) * size * 1.25, 0, 6.2832); ctx.stroke();
                 }
-                var alpha = 0.9 * (1 - clamp01((t - T_FADE) / (T_END - T_FADE - 0.05)));
-                ctx.globalAlpha = alpha;
-                var cache = {};
+                // toz parçacıkları (logo renginde)
+                ctx.globalAlpha = 0.9 * fade;
                 for (var g = 0; g < groups.length; g++) {
                     var grp = groups[g];
                     ctx.fillStyle = grp.color;
                     ctx.beginPath();
                     for (var n2 = 0; n2 < grp.list.length; n2++) {
-                        var p = grp.list[n2], x, y, sz = p.sz;
-                        var cp = cloudPos(p, Math.min(t, T_OPEN));
-                        if (t < T_OPEN) {
-                            var g1 = easeOut(clamp01((t - p.d * 0.3) / 1.0));
-                            x = p.sx + (cp[0] - p.sx) * g1; y = p.sy + (cp[1] - p.sy) * g1;
-                        } else {
-                            var o = easeOutExpo(clamp01((t - T_OPEN - p.d * 0.12) / 0.6));
-                            x = cp[0] + (p.bx - cp[0]) * o; y = cp[1] + (p.by - cp[1]) * o;
-                            sz *= 1 + 0.5 * (1 - o);
-                            if (t >= T_FORM) {
-                                var f = easeInOut(clamp01((t - T_FORM - p.d * 0.3) / 1.0));
-                                var dx = p.tx - p.bx, dy = p.ty - p.by, len = Math.sqrt(dx * dx + dy * dy) || 1;
-                                var sw = Math.sin(Math.PI * f) * p.curve;
-                                x = p.bx + dx * f - dy / len * sw; y = p.by + dy * f + dx / len * sw;
-                                sz *= 1 - 0.25 * f;
-                                var fl = (1 - f) * 3.5 + 0.35;
-                                x += Math.sin(t * 4 + p.ph) * fl; y += Math.cos(t * 3.4 + p.ph) * fl;
-                            } else {
-                                x += Math.sin(t * 2.4 + p.ph) * 4; y += Math.cos(t * 2 + p.ph) * 4;
-                            }
-                        }
-                        ctx.rect(x - sz / 2, y - sz / 2, sz, sz);
+                        var p = grp.list[n2];
+                        place(p, t);
+                        var sz = p.sz * p.s;
+                        ctx.rect(p.x - sz / 2, p.y - sz / 2, sz, sz);
                     }
                     ctx.fill();
                 }
-                if (t >= T_LOGO && splashLogo) splashLogo.classList.add("show");
+                // "veri" karakterleri (0 1 A F < > / #)
+                ctx.font = "9px ui-monospace, Menlo, Consolas, monospace";
+                ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                ctx.fillStyle = "rgb(210,216,226)";
+                for (var k = 0; k < G.length; k++) {
+                    var gp = G[k];
+                    place(gp, t);
+                    ctx.globalAlpha = 0.9 * fade * (0.45 + 0.55 * Math.abs(Math.sin(t * 6 + gp.ph * 5)));
+                    ctx.fillText(CHARS.charAt(Math.floor(t * 7 + gp.ph * 9) % CHARS.length), gp.x, gp.y);
+                }
+                // tarama çizgisi: net logoyu yukarıdan aşağı ortaya çıkarır
+                if (t >= T_SCAN) {
+                    if (!scanStarted) {
+                        scanStarted = true;
+                        splashLogo.style.transition = "none";
+                        splashLogo.style.opacity = "1";
+                    }
+                    var sp = clamp01((t - T_SCAN) / T_SCAN_D), se = easeInOut(sp);
+                    splashLogo.style.clipPath = sp < 1 ? "inset(0 0 " + ((1 - se) * 100).toFixed(1) + "% 0)" : "none";
+                    if (sp > 0 && sp < 1) {
+                        var ly = rect.top + se * size;
+                        ctx.globalAlpha = 0.95;
+                        ctx.shadowColor = "rgb(210,220,235)"; ctx.shadowBlur = 14;
+                        ctx.fillStyle = "rgb(225,232,242)";
+                        ctx.fillRect(cx - size * 0.58, ly - 1, size * 1.16, 2);
+                        ctx.shadowBlur = 0;
+                    }
+                }
+                // kısa glitch titremeleri
+                var gl = false;
+                for (var q2 = 0; q2 < GLITCH.length; q2++) if (t >= GLITCH[q2][0] && t < GLITCH[q2][1]) gl = true;
+                splashLogo.style.transform = gl ? "translateX(" + ((Math.random() - 0.5) * 10).toFixed(1) + "px)" : "";
+                // HUD durum yazısı
+                var prog = clamp01(t / (T_SCAN + T_SCAN_D)), pct = Math.floor(prog * 100);
+                if (pct !== lastPct && hudLine && hudBar) {
+                    lastPct = pct;
+                    hudBar.style.width = pct + "%";
+                    hudLine.textContent = stageText(prog) + " %" + pct;
+                }
                 if (t >= T_END) {
                     ctx.clearRect(0, 0, W, H);
                     closeSplash(150);
                     return;
                 }
-                raf = requestAnimationFrame(frame);
+                requestAnimationFrame(frame);
             }
-            raf = requestAnimationFrame(frame);
+            requestAnimationFrame(frame);
         };
+        splash.addEventListener("click", function () { closeSplash(0); }); // dokununca geç
         if (reduceMotion) {
             setTimeout(function () { return splash.remove(); }, 50);
         } else if (!splashLogo || !dustCanvas || !dustCanvas.getContext) {

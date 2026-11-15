@@ -90,7 +90,12 @@ button{ transition: box-shadow 0.15s ease, transform 0.12s ease; }
     radial-gradient(70% 60% at 50% 45%, rgba(200,210,220,0.10), transparent 65%),
     var(--bg);
   /* Güvenlik ağı: JS çalışmazsa splash yine de kapanır */
-  animation: splashOut 0.5s ease 7s forwards;
+  animation: splashOut 0.5s ease 9s forwards;
+}
+/* ince tarama çizgileri (CRT / terminal hissi) */
+.splash::after{
+  content:""; position:absolute; inset:0; z-index:3; pointer-events:none;
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 3px);
 }
 .splash.leaving{ animation: splashLeave 0.5s ease forwards; }
 .splash-logo{
@@ -99,7 +104,18 @@ button{ transition: box-shadow 0.15s ease, transform 0.12s ease; }
   filter: drop-shadow(0 0 26px rgba(200,210,220,0.45));
 }
 .splash-logo.show{ opacity:1; }
-.splash-dust{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+.splash-dust{ position:absolute; inset:0; z-index:1; width:100%; height:100%; pointer-events:none; }
+.splash-hud{
+  position:absolute; left:0; right:0; z-index:2; text-align:center;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 9vh);
+  display:flex; flex-direction:column; align-items:center; gap:10px; pointer-events:none;
+}
+.hud-line{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size:0.72rem; letter-spacing:0.18em; color: rgba(199,205,214,0.85);
+}
+.hud-bar{ width:160px; height:2px; background: rgba(199,205,214,0.18); border-radius:2px; overflow:hidden; }
+.hud-bar i{ display:block; width:0; height:100%; background: rgb(214,221,232); box-shadow:0 0 8px rgba(214,221,232,0.9); }
 @keyframes splashOut{
   to{ opacity:0; visibility:hidden; pointer-events:none; }
 }
@@ -109,7 +125,7 @@ button{ transition: box-shadow 0.15s ease, transform 0.12s ease; }
 @media (prefers-reduced-motion: reduce){
   .splash{ animation: splashOut 0.01s linear 0.01s forwards; }
   .splash-logo{ opacity:1; transition:none; }
-  .splash-dust{ display:none; }
+  .splash-dust, .splash-hud{ display:none; }
 }
 
 .app-shell{
