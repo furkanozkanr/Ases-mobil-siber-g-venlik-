@@ -1,0 +1,43 @@
+name: Dosyaları site klasörüne taşı
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  tasi:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Depoyu çek
+        uses: actions/checkout@v4
+
+      - name: Kökteki güncel dosyaları site/ içine taşı
+        run: |
+          mkdir -p site
+          move() { # $1 = hedef ad, $2 = uzantı  ("app (1).js" gibi tarayıcı adlarını da yakalar)
+            for f in "$1 ("*")$2" "$1$2"; do
+              if [ -f "$f" ]; then mv -f "$f" "site/$1$2"; fi
+            done
+          }
+          move app .js
+          move index .html
+          move style .css
+          move sw .js
+          move tips .js
+          move manifest .json
+
+      - name: Kaydet
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Güncel dosyaları site/ klasörüne taşı" || echo "Taşınacak dosya yok"
+          git push
+
+      - name: GitHub Pages yayınını başlat
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run duzenle.yml
