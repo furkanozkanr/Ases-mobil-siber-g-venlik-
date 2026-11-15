@@ -1,7 +1,7 @@
 "use strict";
 // Dosyalarda değişiklik yaptığında bu sürüm adını artır; eski önbellek otomatik temizlenir.
 importScripts("tips.js");
-var CACHE_NAME = "ases-v14";
+var CACHE_NAME = "ases-v15";
 var ASSETS = [
     "./",
     "./style.css",

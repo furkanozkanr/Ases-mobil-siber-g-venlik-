@@ -81,52 +81,35 @@ button{ transition: box-shadow 0.15s ease, transform 0.12s ease; }
   *{ animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
 
-/* ===== SPLASH INTRO ===== */
+/* ===== SPLASH INTRO (siber toz) ===== */
 .splash{
-  position: fixed; inset:0; z-index:100;
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
-  background: radial-gradient(70% 60% at 50% 40%, rgba(200,210,220,0.14), transparent 65%),
+  position: fixed; inset:0; z-index:100; overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+  background: radial-gradient(70% 60% at 50% 45%, rgba(200,210,220,0.10), transparent 65%),
     #0a0908; background:
-    radial-gradient(70% 60% at 50% 40%, rgba(200,210,220,0.14), transparent 65%),
+    radial-gradient(70% 60% at 50% 45%, rgba(200,210,220,0.10), transparent 65%),
     var(--bg);
-  animation: splashOut 0.5s ease 1.35s forwards;
+  /* Güvenlik ağı: JS çalışmazsa splash yine de kapanır */
+  animation: splashOut 0.5s ease 7s forwards;
 }
-.splash-rings{
-  position:absolute; top:50%; left:50%; width:104px; height:104px; border-radius:50%;
-  border:1px solid rgba(200,210,220,0.4);
-  transform: translate(-50%,-50%) scale(1);
-  animation: splashRing 1.5s ease-out forwards;
-}
+.splash.leaving{ animation: splashLeave 0.5s ease forwards; }
 .splash-logo{
-  width:104px; height:104px; border-radius:24px;
-  opacity:0; transform: scale(0.75) rotate(0deg);
-  filter: drop-shadow(0 0 22px rgba(200,210,220,0.5));
-  animation: splashLogoIn 0.9s cubic-bezier(.2,.8,.2,1) 0.15s forwards;
+  width:min(62vw,240px); height:min(62vw,240px); border-radius:50%;
+  opacity:0; transition: opacity 0.7s ease;
+  filter: drop-shadow(0 0 26px rgba(200,210,220,0.45));
 }
-.splash-name{
-  font-family:'Oswald', sans-serif; font-weight:700; font-size:1.15rem; letter-spacing:0.22em;
-  color: #f5f3f0; color: var(--white); opacity:0;
-  animation: splashTextIn 0.5s ease 0.85s forwards;
-}
-@keyframes splashLogoIn{
-  0%{ opacity:0; transform: scale(0.75) rotate(0deg); }
-  60%{ opacity:1; transform: scale(1.06) rotate(230deg); }
-  100%{ opacity:1; transform: scale(1) rotate(360deg); }
-}
-@keyframes splashTextIn{
-  from{ opacity:0; transform: translateY(6px); }
-  to{ opacity:1; transform: translateY(0); }
-}
-@keyframes splashRing{
-  0%{ transform: translate(-50%,-50%) scale(1); opacity:0.9; }
-  100%{ transform: translate(-50%,-50%) scale(2.7); opacity:0; }
-}
+.splash-logo.show{ opacity:1; }
+.splash-dust{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
 @keyframes splashOut{
+  to{ opacity:0; visibility:hidden; pointer-events:none; }
+}
+@keyframes splashLeave{
   to{ opacity:0; visibility:hidden; pointer-events:none; }
 }
 @media (prefers-reduced-motion: reduce){
   .splash{ animation: splashOut 0.01s linear 0.01s forwards; }
-  .splash-logo, .splash-name, .splash-rings{ animation: none; opacity:1; }
+  .splash-logo{ opacity:1; transition:none; }
+  .splash-dust{ display:none; }
 }
 
 .app-shell{
